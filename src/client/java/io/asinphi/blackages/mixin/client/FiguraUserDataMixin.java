@@ -28,12 +28,7 @@ public abstract class FiguraUserDataMixin {
     ) {
         // Prevent player from changing avatar locally
         if (ClientAppliedTracker.isPlayerOverridden(this.id, nbt)) {
-            System.out.println("Cancelling loadAvatar " +
-                    nbt.getCompound("metadata").getString("name"));
             ci.cancel();
-        } else {
-            System.out.println("Loading avatar; didn't cancel " +
-                    nbt.getCompound("metadata").getString("name"));
         }
     }
 }
