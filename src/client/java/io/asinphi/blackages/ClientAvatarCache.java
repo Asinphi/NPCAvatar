@@ -1,4 +1,4 @@
-package io.asinphi.blackages.avatar;
+package io.asinphi.blackages;
 
 import io.asinphi.blackages.attachment.ModAttachments;
 import net.minecraft.nbt.CompoundTag;

@@ -1,17 +1,22 @@
 package io.asinphi.blackages;
 
 import io.asinphi.blackages.attachment.ModAttachments;
-import io.asinphi.blackages.avatar.ClientAvatarCache;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
+import java.io.ByteArrayInputStream;
+
 @Environment(EnvType.CLIENT)
 public final class ClientAvatarApplier {
+
+    private static final long MAX_DECOMPRESSED_NBT_BYTES = 8L * 1024L * 1024L;
 
     private static int tickCounter = 0;
 
@@ -26,6 +31,16 @@ public final class ClientAvatarApplier {
         if ((tickCounter++ % 10) != 0) return;
 
         for (Entity e : mc.level.entitiesForRendering()) {
+            if (Boolean.TRUE.equals(e.getAttached(ModAttachments.HAS_AVATAR_BLOB))) {
+                if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.BLOB_MARKER_ID)) {
+                    // Mark immediately to suppress further requests
+                    ClientAppliedTracker.markApplied(e.getId(), ModAttachments.BLOB_MARKER_ID);
+
+                    ClientNetworking.requestEntityBlob(e.getId());
+                }
+                continue;
+            }
+
             ResourceLocation avatarId = e.getAttached(ModAttachments.AVATAR_ID);
 
             // If server cleared it (or missing), explicitly un-apply Figura avatar.
@@ -65,8 +80,19 @@ public final class ClientAvatarApplier {
                 ClientAppliedTracker.markApplied(e.getId(), avatarId);
             } catch (Throwable t) {
                 // If Figura throws, don't permanently mark as applied.
-                // You might optionally log here.
+                // Maybe log here.
             }
+        }
+    }
+
+    private static CompoundTag decompressCompressedNbt(byte[] compressed) {
+        try {
+            return NbtIo.readCompressed(
+                    new ByteArrayInputStream(compressed),
+                    NbtAccounter.create(MAX_DECOMPRESSED_NBT_BYTES)
+            );
+        } catch (Exception e) {
+            return null;
         }
     }
 

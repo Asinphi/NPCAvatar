@@ -1,8 +1,9 @@
 package io.asinphi.blackages;
 
-import io.asinphi.blackages.avatar.ClientAvatarCache;
 import io.asinphi.blackages.networking.ModPackets;
+import io.asinphi.blackages.networking.payload.C2SPlayerAvatarBlobPayload;
 import io.asinphi.blackages.networking.payload.C2SRequestAvatarPayload;
+import io.asinphi.blackages.networking.payload.C2SRequestEntityBlobPayload;
 import io.asinphi.blackages.networking.payload.C2SUploadAvatarPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -74,10 +75,65 @@ public final class ClientNetworking {
                 ClientAppliedTracker.invalidateId(payload.avatarId()); // next class
             });
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(ModPackets.S2C_REQUEST_PLAYER_AVATAR, (payload, context) -> {
+            // Run on client thread.
+            Minecraft.getInstance().execute(() -> {
+                byte[] compressed = FiguraBridge.getLocalPlayerAvatarCompressed();
+
+                // If player has no avatar (or Figura not ready), reply with empty bytes.
+                if (compressed == null) compressed = new byte[0];
+
+                var player = Minecraft.getInstance().player;
+                if (player != null) {
+                    player.sendSystemMessage(Component.literal(
+                            "[blackages] replying avatar blob req " + payload.requestId() + " bytes=" + compressed.length
+                    ));
+                }
+
+                ClientPlayNetworking.send(new C2SPlayerAvatarBlobPayload(payload.requestId(), compressed));
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(ModPackets.S2C_ENTITY_BLOB, (payload, context) -> {
+            Minecraft.getInstance().execute(() -> {
+                var mc = Minecraft.getInstance();
+                if (mc.level == null) return;
+
+                int entityId = payload.entityId();
+                byte[] data = payload.compressedNbt();
+                if (data == null || data.length == 0) return;
+
+                var entity = mc.level.getEntity(entityId);
+                if (entity == null) return; // not in this client world anymore
+
+                // If we already applied this exact blob hash, don't redo it.
+                if (!ClientAppliedTracker.needsApply(entityId, data)) return;
+
+                try {
+                    // Decode & apply
+                    var nbt = net.minecraft.nbt.NbtIo.readCompressed(
+                            new java.io.ByteArrayInputStream(data),
+                            net.minecraft.nbt.NbtAccounter.create(8L * 1024L * 1024L)
+                    );
+
+                    FiguraBridge.applyToEntity(entity, nbt);
+
+                    // Mark applied using the blob bytes (hashing happens inside the tracker).
+//                    ClientAppliedTracker.markApplied(entityId, data); // Clears BLOB_MARKER_ID, causing re-request :(
+                } catch (Throwable ignored) {
+                    // If decode/apply fails, don't markApplied; client can request again later.
+                }
+            });
+        });
     }
 
     public static void requestAvatar(ResourceLocation id) {
         ClientPlayNetworking.send(new C2SRequestAvatarPayload(id));
+    }
+
+    public static void requestEntityBlob(int entityId) {
+        ClientPlayNetworking.send(new C2SRequestEntityBlobPayload(entityId));
     }
 
     private ClientNetworking() {}

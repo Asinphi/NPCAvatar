@@ -1,11 +1,9 @@
 package io.asinphi.blackages;
 
+import io.asinphi.blackages.attachment.ModAttachments;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClientAppliedTracker {
@@ -15,7 +13,7 @@ public final class ClientAppliedTracker {
     /**
      * entityId -> avatarId last applied
      */
-    private static final Map<Integer, ResourceLocation> appliedByEntityId = new HashMap<>();
+    private static final Map<Integer, Integer> appliedHashByEntityId = new ConcurrentHashMap<>();
 
     /**
      * UUIDs for which Figura backend refresh should be blocked (thread-safe).
@@ -27,18 +25,32 @@ public final class ClientAppliedTracker {
      * Returns true if this entity needs (re)applying the avatar.
      */
     public static boolean needsApply(int entityId, ResourceLocation avatarId) {
-        ResourceLocation prev = appliedByEntityId.get(entityId);
-        return prev == null || !prev.equals(avatarId);
+        int desired = hashAvatarId(avatarId);
+        Integer prev = appliedHashByEntityId.get(entityId);
+        return prev == null || prev != desired;
+    }
+
+    public static boolean needsApply(int entityId, byte[] avatarBlob) {
+        int desired = hashAvatarBlob(avatarBlob);
+        Integer prev = appliedHashByEntityId.get(entityId);
+        return prev == null || prev != desired;
     }
 
     /**
      * Mark that the avatar was applied to this entity.
      */
     public static void markApplied(int entityId, ResourceLocation avatarId) {
-        if (appliedByEntityId.size() > MAX_TRACKED) {
-            appliedByEntityId.clear(); // worst-case: causes reapply burst
+        if (appliedHashByEntityId.size() > MAX_TRACKED) {
+            appliedHashByEntityId.clear(); // worst-case: causes reapply burst
         }
-        appliedByEntityId.put(entityId, avatarId);
+        appliedHashByEntityId.put(entityId, hashAvatarId(avatarId));
+    }
+
+    public static void markApplied(int entityId, byte[] avatarBlob) {
+        if (appliedHashByEntityId.size() > MAX_TRACKED) {
+            appliedHashByEntityId.clear();
+        }
+        appliedHashByEntityId.put(entityId, hashAvatarBlob(avatarBlob));
     }
 
     /**
@@ -46,7 +58,15 @@ public final class ClientAppliedTracker {
      * Clears any entities that were using it so they reapply next tick.
      */
     public static void invalidateId(ResourceLocation avatarId) {
-        appliedByEntityId.entrySet().removeIf(e -> avatarId.equals(e.getValue()));
+        int h = hashAvatarId(avatarId);
+        if (h == 0) return;
+        appliedHashByEntityId.entrySet().removeIf(e -> e.getValue() == h);
+    }
+
+    public static void invalidateBlob(byte[] avatarBlob) {
+        int h = hashAvatarBlob(avatarBlob);
+        if (h == 0) return;
+        appliedHashByEntityId.entrySet().removeIf(e -> e.getValue() == h);
     }
 
     public static void setPlayerOverridden(UUID playerId, boolean overridden) {
@@ -60,8 +80,18 @@ public final class ClientAppliedTracker {
     }
 
     public static void clearAll() {
-        appliedByEntityId.clear();
+        appliedHashByEntityId.clear();
         overriddenPlayers.clear();
+    }
+
+    private static int hashAvatarId(ResourceLocation avatarId) {
+        // 0 means "nothing"
+        return avatarId == null ? 0 : avatarId.hashCode();
+    }
+
+    private static int hashAvatarBlob(byte[] blob) {
+        // 0 means "nothing"
+        return (blob == null || blob.length == 0) ? 0 : Arrays.hashCode(blob);
     }
 
     private ClientAppliedTracker() {}

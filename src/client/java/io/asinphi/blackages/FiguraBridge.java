@@ -3,6 +3,7 @@ package io.asinphi.blackages;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.entity.Entity;
@@ -66,6 +67,21 @@ public final class FiguraBridge {
         });
     }
 
+    /**
+     * Returns the local player's currently loaded Figura avatar as COMPRESSED NBT bytes,
+     * or null if the player has no avatar loaded.
+     */
+    public static byte[] getLocalPlayerAvatarCompressed() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return null;
+
+        UUID uuid = player.getUUID();
+
+        Avatar avatar = AvatarManager.getLoadedAvatar(uuid);
+        if (avatar == null || avatar.nbt == null) return null;
+
+        return compress(avatar.nbt);
+    }
 
     /**
      * Applies the avatar NBT to an entity using Figura.
@@ -81,24 +97,6 @@ public final class FiguraBridge {
             return;
         }
         AvatarManager.loadEntityAvatar(entity, avatarNbt);
-    }
-
-    /**
-     * UserData implementation that captures the NBT and completes a future.
-     * Avoids constructing/keeping Figura Avatar objects beyond what's necessary.
-     */
-    private static final class CapturingUserData extends UserData {
-        private final CompletableFuture<CompoundTag> future = new CompletableFuture<>();
-
-        private CapturingUserData(UUID id) {
-            super(id);
-        }
-
-        @Override
-        public void loadAvatar(CompoundTag nbt) {
-            // Defensive copy so caller gets stable data
-            future.complete(nbt.copy());
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -160,6 +158,34 @@ public final class FiguraBridge {
             }
         } catch (Throwable ignored) {
             // If Figura changes internals, we fail "softly" (worst case: avatar won't clear)
+        }
+    }
+
+    private static byte[] compress(CompoundTag tag) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            NbtIo.writeCompressed(tag, out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * UserData implementation that captures the NBT and completes a future.
+     * Avoids constructing/keeping Figura Avatar objects beyond what's necessary.
+     */
+    private static final class CapturingUserData extends UserData {
+        private final CompletableFuture<CompoundTag> future = new CompletableFuture<>();
+
+        private CapturingUserData(UUID id) {
+            super(id);
+        }
+
+        @Override
+        public void loadAvatar(CompoundTag nbt) {
+            // Defensive copy so caller gets stable data
+            future.complete(nbt.copy());
         }
     }
 

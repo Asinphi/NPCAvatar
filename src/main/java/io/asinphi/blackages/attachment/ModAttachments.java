@@ -1,5 +1,6 @@
 package io.asinphi.blackages.attachment;
 
+import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -10,6 +11,8 @@ import java.nio.ByteBuffer;
 public final class ModAttachments {
     public static final ResourceLocation NONE = ResourceLocation.fromNamespaceAndPath(
             "blackages", "none");
+    public static final ResourceLocation BLOB_MARKER_ID =
+            ResourceLocation.fromNamespaceAndPath("blackages", "blob");
 
     public static final AttachmentType<ResourceLocation> AVATAR_ID =
             AttachmentRegistry.<ResourceLocation>builder()
@@ -19,6 +22,15 @@ public final class ModAttachments {
                             (entity, player) -> true)
                     .buildAndRegister(ResourceLocation.fromNamespaceAndPath(
                             "blackages", "avatar_id"));
+
+    public static final AttachmentType<Boolean> HAS_AVATAR_BLOB =
+            AttachmentRegistry.<Boolean>builder()
+                    .initializer(() -> false)
+                    .persistent(Codec.BOOL) // persistence optional, but fine
+                    .syncWith(ByteBufCodecs.BOOL, (entity, player) -> true)
+                    .buildAndRegister(
+                            ResourceLocation.fromNamespaceAndPath("blackages", "has_avatar_blob"));
+
 
     public static final AttachmentType<byte[]> AVATAR_BLOB =
             AttachmentRegistry.<byte[]>builder()
@@ -33,7 +45,7 @@ public final class ModAttachments {
                             },
                             ByteBuffer::wrap
                     ))
-                    .syncWith(ByteBufCodecs.BYTE_ARRAY, (entity, player) -> true)
+//                    .syncWith(ByteBufCodecs.BYTE_ARRAY, (entity, player) -> true)
                     .buildAndRegister(ResourceLocation.fromNamespaceAndPath("blackages", "avatar_blob"));
 
     /** Call from common init to guarantee class loading & registration. */
