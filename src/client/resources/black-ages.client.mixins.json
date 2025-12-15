@@ -4,7 +4,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
       "AbstractZombieModelMixin",
-      "FiguraUserDataMixin"
+      "FiguraUserDataMixin",
+      "FiguraAvatarManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

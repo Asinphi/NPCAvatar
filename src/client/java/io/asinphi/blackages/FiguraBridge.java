@@ -92,7 +92,7 @@ public final class FiguraBridge {
         if (entity == null || avatarNbt == null) return;
 
         if (entity instanceof Player) {
-            ClientAppliedTracker.setPlayerOverridden(entity.getUUID(), true);
+            ClientAppliedTracker.setPlayerOverridden(entity.getUUID(), avatarNbt);
             AvatarManager.setAvatar(entity.getUUID(), avatarNbt);
             return;
         }
@@ -107,7 +107,7 @@ public final class FiguraBridge {
             UUID id = player.getUUID();
 
             // Stop blocking backend refresh for this player (your mixin will now allow loadData again)
-            ClientAppliedTracker.setPlayerOverridden(id, false);
+            ClientAppliedTracker.setPlayerOverridden(id, null);
 
             // Best effort: clear any currently-loaded avatar for that user in Figura.
             try {

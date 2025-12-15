@@ -1,6 +1,7 @@
 package io.asinphi.blackages;
 
 import io.asinphi.blackages.attachment.ModAttachments;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public final class ClientAppliedTracker {
      * UUIDs for which Figura backend refresh should be blocked (thread-safe).
      * This is what the UserData mixin will consult.
      */
-    private static final Set<UUID> overriddenPlayers = ConcurrentHashMap.newKeySet();
+    private static final Map<UUID, CompoundTag> overriddenPlayers = new ConcurrentHashMap<>();
 
     /**
      * Returns true if this entity needs (re)applying the avatar.
@@ -69,14 +70,19 @@ public final class ClientAppliedTracker {
         appliedHashByEntityId.entrySet().removeIf(e -> e.getValue() == h);
     }
 
-    public static void setPlayerOverridden(UUID playerId, boolean overridden) {
+    public static void setPlayerOverridden(UUID playerId, CompoundTag nbt) {
         if (playerId == null) return;
-        if (overridden) overriddenPlayers.add(playerId);
+        if (nbt != null) overriddenPlayers.put(playerId, nbt);
         else overriddenPlayers.remove(playerId);
     }
 
+    public static boolean isPlayerOverridden(UUID playerId, CompoundTag nbt) {
+        CompoundTag appliedNbt = overriddenPlayers.get(playerId);
+        return playerId != null && appliedNbt != null && !appliedNbt.equals(nbt);
+    }
+
     public static boolean isPlayerOverridden(UUID playerId) {
-        return playerId != null && overriddenPlayers.contains(playerId);
+        return playerId != null && overriddenPlayers.containsKey(playerId);
     }
 
     public static void clearAll() {
