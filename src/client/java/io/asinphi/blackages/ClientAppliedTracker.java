@@ -76,6 +76,10 @@ public final class ClientAppliedTracker {
         else overriddenPlayers.remove(playerId);
     }
 
+    public static CompoundTag getPlayerOverridingNbt(UUID playerId) {
+        return overriddenPlayers.get(playerId);
+    }
+
     public static boolean isPlayerOverridden(UUID playerId, CompoundTag nbt) {
         CompoundTag appliedNbt = overriddenPlayers.get(playerId);
         return playerId != null && appliedNbt != null && !appliedNbt.equals(nbt);

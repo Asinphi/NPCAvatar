@@ -3,6 +3,7 @@ package io.asinphi.blackages.mixin.client;
 import com.mojang.datafixers.util.Pair;
 import io.asinphi.blackages.ClientAppliedTracker;
 import net.minecraft.nbt.CompoundTag;
+import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.UserData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,12 +23,29 @@ public abstract class FiguraUserDataMixin {
     @Shadow
     public UUID id;
 
+    @Shadow
+    public Avatar getMainAvatar() {
+        throw new AssertionError();
+    }
+
     @Inject(method = "loadAvatar", at = @At("HEAD"), cancellable = true)
     private void blackages$blockBackendRefresh(
             CompoundTag nbt, CallbackInfo ci
     ) {
         // Prevent player from changing avatar locally
         if (ClientAppliedTracker.isPlayerOverridden(this.id, nbt)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "clear", at = @At("HEAD"), cancellable = true)
+    private void blackages$blockClear(
+            CallbackInfo ci
+    ) {
+        // Prevent clearing avatars other than one from the avatar-id attachment
+        Avatar mainAvatar = getMainAvatar();
+        if (mainAvatar != null &&
+                mainAvatar.nbt.equals(ClientAppliedTracker.getPlayerOverridingNbt(id))) {
             ci.cancel();
         }
     }
