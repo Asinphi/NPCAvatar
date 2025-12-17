@@ -1,5 +1,6 @@
 package io.asinphi.blackages.mixin.client;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,27 +18,19 @@ public abstract class AbstractZombieModelMixin<T extends net.minecraft.world.ent
         super(root);
     }
 
-    @Inject(method = "setupAnim", at = @At("TAIL"))
-    private void blackages$playerArms(
-            T entity,
-            float limbSwing,
-            float limbSwingAmount,
-            float ageInTicks,
-            float netHeadYaw,
-            float headPitch,
-            CallbackInfo ci
-    ) {
-        if (!(entity instanceof net.minecraft.world.entity.monster.Zombie)) return;
-        // TODO Use Fabric data attachment instead
-//        if (!entity.getTags().contains("blackages:player_arms")) return;
+    @WrapWithCondition(
+            method = "setupAnim(Lnet/minecraft/world/entity/monster/Monster;FFFFF)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZFF)V")
+    )
+    private boolean blackages$cancelZombieArms(ModelPart leftArm, ModelPart rightArm, boolean isAggressive, float attackTime, float ageInTicks, T entity) {
+        // The 'entity' is usually passed as the last argument in MixinExtras if it's the method parameter
+        return !shouldCancelZombieArms(entity);
+    }
 
-        float swing = limbSwing * 0.6662F;
-        this.rightArm.xRot = net.minecraft.util.Mth.cos(swing + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
-        this.leftArm.xRot  = net.minecraft.util.Mth.cos(swing)                 * 2.0F * limbSwingAmount * 0.5F;
-
-        this.rightArm.yRot = this.leftArm.yRot = 0.0F;
-        this.rightArm.zRot = this.leftArm.zRot = 0.0F;
-
-        this.setupAttackAnimation(entity, ageInTicks);
+    @Unique
+    private boolean shouldCancelZombieArms(T entity) {
+//        return entity.getTags().contains("blackages:player_arms");
+        return true;
     }
 }
