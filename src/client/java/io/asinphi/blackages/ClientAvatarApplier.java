@@ -24,6 +24,60 @@ public final class ClientAvatarApplier {
         ClientTickEvents.END_CLIENT_TICK.register(ClientAvatarApplier::onEndTick);
     }
 
+    public static void processEntity(Entity e) {
+        if (Boolean.TRUE.equals(e.getAttached(ModAttachments.HAS_AVATAR_BLOB))) {
+            if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.BLOB_MARKER_ID)) {
+                // Mark immediately to suppress further requests
+                ClientAppliedTracker.markApplied(e.getId(), ModAttachments.BLOB_MARKER_ID);
+
+                ClientNetworking.requestEntityBlob(e.getId());
+            }
+            return;
+        }
+
+        ResourceLocation avatarId = e.getAttached(ModAttachments.AVATAR_ID);
+
+        // If server cleared it (or missing), explicitly un-apply Figura avatar.
+        if (avatarId == null || avatarId.equals(ModAttachments.NONE)) {
+            // Only do work if we previously applied something.
+            if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.NONE)) {
+                try {
+                    FiguraBridge.clearEntityAvatar(e);
+                } catch (Throwable ignored) {}
+
+                // Mark as "none applied" so we don't clear every time.
+                ClientAppliedTracker.markApplied(e.getId(), ModAttachments.NONE);
+            }
+            return;
+        }
+
+        // If we don't have the avatar data yet, request it once.
+        if (!ClientAvatarCache.has(avatarId)) {
+            if (ClientAvatarCache.markRequested(avatarId)) {
+                ClientNetworking.requestAvatar(avatarId);
+            }
+            return;
+        }
+
+        // Avoid reapplying every run.
+        if (!ClientAppliedTracker.needsApply(e.getId(), avatarId)) return;
+
+        // Decode and apply.
+        CompoundTag nbt = ClientAvatarCache.decompress(avatarId);
+        if (nbt == null) {
+            // decompress() already drops invalid cache; next tick it'll request again
+            return;
+        }
+
+        try {
+            FiguraBridge.applyToEntity(e, nbt);
+            ClientAppliedTracker.markApplied(e.getId(), avatarId);
+        } catch (Throwable t) {
+            // If Figura throws, don't permanently mark as applied.
+            // Maybe log here.
+        }
+    }
+
     private static void onEndTick(Minecraft mc) {
         if (mc.level == null) return;
 
@@ -31,57 +85,7 @@ public final class ClientAvatarApplier {
         if ((tickCounter++ % 10) != 0) return;
 
         for (Entity e : mc.level.entitiesForRendering()) {
-            if (Boolean.TRUE.equals(e.getAttached(ModAttachments.HAS_AVATAR_BLOB))) {
-                if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.BLOB_MARKER_ID)) {
-                    // Mark immediately to suppress further requests
-                    ClientAppliedTracker.markApplied(e.getId(), ModAttachments.BLOB_MARKER_ID);
-
-                    ClientNetworking.requestEntityBlob(e.getId());
-                }
-                continue;
-            }
-
-            ResourceLocation avatarId = e.getAttached(ModAttachments.AVATAR_ID);
-
-            // If server cleared it (or missing), explicitly un-apply Figura avatar.
-            if (avatarId == null || avatarId.equals(ModAttachments.NONE)) {
-                // Only do work if we previously applied something.
-                if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.NONE)) {
-                    try {
-                        FiguraBridge.clearEntityAvatar(e);
-                    } catch (Throwable ignored) {}
-
-                    // Mark as "none applied" so we don't clear every time.
-                    ClientAppliedTracker.markApplied(e.getId(), ModAttachments.NONE);
-                }
-                continue;
-            }
-
-            // If we don't have the avatar data yet, request it once.
-            if (!ClientAvatarCache.has(avatarId)) {
-                if (ClientAvatarCache.markRequested(avatarId)) {
-                    ClientNetworking.requestAvatar(avatarId);
-                }
-                continue;
-            }
-
-            // Avoid reapplying every run.
-            if (!ClientAppliedTracker.needsApply(e.getId(), avatarId)) continue;
-
-            // Decode and apply.
-            CompoundTag nbt = ClientAvatarCache.decompress(avatarId);
-            if (nbt == null) {
-                // decompress() already drops invalid cache; next tick it'll request again
-                continue;
-            }
-
-            try {
-                FiguraBridge.applyToEntity(e, nbt);
-                ClientAppliedTracker.markApplied(e.getId(), avatarId);
-            } catch (Throwable t) {
-                // If Figura throws, don't permanently mark as applied.
-                // Maybe log here.
-            }
+            processEntity(e);
         }
     }
 
