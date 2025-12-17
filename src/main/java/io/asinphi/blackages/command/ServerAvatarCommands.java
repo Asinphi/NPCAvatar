@@ -92,7 +92,10 @@ public final class ServerAvatarCommands {
                                                 return 0;
                                             }
 
+                                            // TODO Refactor attachment operations to methods
                                             target.setAttached(ModAttachments.AVATAR_ID, avatarId);
+                                            target.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
+                                            target.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
                                             ctx.getSource().sendSuccess(
                                                     () -> Component.literal("Applied '" + avatarId.getPath() + "' to " + target.getDisplayName().getString()),
                                                     true
@@ -121,6 +124,8 @@ public final class ServerAvatarCommands {
                                                     Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "target");
                                                     for (Entity e : targets) {
                                                         e.setAttached(ModAttachments.AVATAR_ID, avatarId);
+                                                        e.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
+                                                        e.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
                                                     }
 
                                                     int count = targets.size();
