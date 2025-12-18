@@ -6,9 +6,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import io.asinphi.blackages.attachment.ModAttachments;
 import io.asinphi.blackages.avatar.AvatarStoreState;
-import io.asinphi.blackages.networking.ServerNetworking;
+import io.asinphi.blackages.avatar.EntityAvatarManager;
 import io.asinphi.blackages.networking.payload.S2CRequestLocalUploadPayload;
 import io.asinphi.blackages.util.AvatarIdUtil;
 import io.asinphi.blackages.util.PermissionUtil;
@@ -91,11 +90,7 @@ public final class ServerAvatarCommands {
                                                 ctx.getSource().sendFailure(Component.literal("No entity in sight."));
                                                 return 0;
                                             }
-
-                                            // TODO Refactor attachment operations to methods
-                                            target.setAttached(ModAttachments.AVATAR_ID, avatarId);
-                                            target.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
-                                            target.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
+                                            EntityAvatarManager.applyAvatarId(target, avatarId);
                                             ctx.getSource().sendSuccess(
                                                     () -> Component.literal("Applied '" + avatarId.getPath() + "' to " + target.getDisplayName().getString()),
                                                     true
@@ -123,9 +118,7 @@ public final class ServerAvatarCommands {
 
                                                     Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "target");
                                                     for (Entity e : targets) {
-                                                        e.setAttached(ModAttachments.AVATAR_ID, avatarId);
-                                                        e.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
-                                                        e.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
+                                                        EntityAvatarManager.applyAvatarId(e, avatarId);
                                                     }
 
                                                     int count = targets.size();
@@ -138,18 +131,72 @@ public final class ServerAvatarCommands {
                                         )
                                 )
                         )
-                        .then(Commands.literal("applyfromplayer")
+                        .then(Commands.literal("copy")
+                                .requires(src -> {
+                                    if (src.getEntity() instanceof ServerPlayer player) {
+                                        return PermissionUtil.check(player, "blackages.apply", 2);
+                                    }
+                                    // console / command blocks / functions
+                                    return src.hasPermission(2);
+                                })
+                                .then(Commands.argument("source", EntityArgument.entities())
+                                        .executes(ctx -> {
+                                            if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
+                                                ctx.getSource().sendFailure(Component.literal(
+                                                        "Console must specify targets: /serveravatar copy <source> <targets>"
+                                                ));
+                                                return 0;
+                                            }
+
+                                            Entity source = EntityArgument.getEntity(ctx, "source");
+
+                                            Entity target = raycastEntity(executor, MAX_DISTANCE);
+                                            if (target == null) {
+                                                ctx.getSource().sendFailure(Component.literal("No entity in sight."));
+                                                return 0;
+                                            }
+
+                                            EntityAvatarManager.copyTo(source, List.of(target));
+
+                                            ctx.getSource().sendSuccess(
+                                                    () -> Component.literal("Copied avatar from " + source.getDisplayName().getString()
+                                                            + " to 1 entity."),
+                                                    true
+                                            );
+                                            return 1;
+                                        })
+                                        .then(Commands.argument("targets", EntityArgument.entities())
+                                                .executes(ctx -> {
+                                                    Entity source =
+                                                            EntityArgument.getEntity(ctx, "source");
+                                                    Collection<? extends Entity> targets =
+                                                            EntityArgument.getEntities(ctx, "targets");
+
+                                                    EntityAvatarManager.copyTo(source, targets);
+
+                                                    ctx.getSource().sendSuccess(
+                                                            () -> Component.literal("Copied avatar from "
+                                                                    + source.getDisplayName().getString() + " to "
+                                                                    + targets.size() + " target entity(ies)."),
+                                                            true
+                                                    );
+                                                    return targets.size();
+                                                })
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("copyfromplayer")
                                 .requires(src ->
                                         // allow console too; only gate permission when a player is the executor
                                         !(src.getEntity() instanceof ServerPlayer p) || PermissionUtil.check(p, "blackages.apply", 2)
                                 )
                                 .then(Commands.argument("player", EntityArgument.player())
 
-                                        // 1) applyfromplayer <player>  (raycast fallback, player executor only)
+                                        // 1) copyfromplayer <player>  (raycast fallback, player executor only)
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
                                                 ctx.getSource().sendFailure(Component.literal(
-                                                        "Console must specify targets: /serveravatar applyfromplayer <player> <targets>"
+                                                        "Console must specify targets: /serveravatar copyfromplayer <player> <targets>"
                                                 ));
                                                 return 0;
                                             }
@@ -162,15 +209,11 @@ public final class ServerAvatarCommands {
                                                 return 0;
                                             }
 
-                                            // Clear ID-based avatar immediately; blob will arrive async.
-                                            target.setAttached(ModAttachments.AVATAR_ID, ModAttachments.NONE);
-                                            target.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
-
-                                            int requestId = ServerNetworking.requestPlayerAvatarBlob(sourcePlayer, List.of(target));
+                                            EntityAvatarManager.copyTo(sourcePlayer, List.of(target));
 
                                             ctx.getSource().sendSuccess(
                                                     () -> Component.literal("Requested avatar from " + sourcePlayer.getName().getString()
-                                                            + " (req " + requestId + "), will apply to 1 entity."),
+                                                            + " will apply to 1 entity."),
                                                     true
                                             );
                                             return 1;
@@ -186,18 +229,10 @@ public final class ServerAvatarCommands {
                                                         return 0;
                                                     }
 
-                                                    // Clear ID-based avatar immediately; blob will arrive async.
-                                                    for (Entity e : targets) {
-                                                        e.setAttached(ModAttachments.AVATAR_ID, ModAttachments.NONE);
-                                                        e.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
-                                                    }
-
-                                                    int requestId = ServerNetworking.requestPlayerAvatarBlob(sourcePlayer, List.copyOf(targets));
-
-                                                    int count = targets.size();
+                                                    int count = EntityAvatarManager.copyTo(sourcePlayer, targets);
                                                     ctx.getSource().sendSuccess(
                                                             () -> Component.literal("Requested avatar from " + sourcePlayer.getName().getString()
-                                                                    + " (req " + requestId + "), will apply to " + count + " entity(ies)."),
+                                                                    + " will apply to " + count + " entity(ies)."),
                                                             true
                                                     );
                                                     return count;
@@ -230,9 +265,7 @@ public final class ServerAvatarCommands {
                                         return 0;
                                     }
 
-                                    target.setAttached(ModAttachments.AVATAR_ID, ModAttachments.NONE);
-                                    target.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
-                                    target.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
+                                    EntityAvatarManager.clearAvatarFromEntity(target);
 
                                     src.sendSuccess(
                                             () -> Component.literal("Cleared avatar from " + target.getDisplayName().getString()),
@@ -249,9 +282,7 @@ public final class ServerAvatarCommands {
 
                                             int count = 0;
                                             for (Entity e : targets) {
-                                                e.setAttached(ModAttachments.AVATAR_ID, ModAttachments.NONE);
-                                                e.setAttached(ModAttachments.AVATAR_BLOB, new byte[0]);
-                                                e.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);
+                                                EntityAvatarManager.clearAvatarFromEntity(e);
                                                 count++;
                                             }
 
