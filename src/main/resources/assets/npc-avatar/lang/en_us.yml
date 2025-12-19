@@ -34,7 +34,7 @@ global_placeholders:
 
   # Flat status prefixes (valid MiniMessage tag names: lowercase + '_' only)
   prefix_info: "<dark_gray><bold>[</bold><blue><bold>i</bold></blue><dark_gray><bold>]</bold></dark_gray> <gray>"
-  prefix_success: "<dark_gray><bold>[</bold><dark_green><bold>!</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
+  prefix_success: "<dark_gray><bold>[</bold><dark_green><bold>✔</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
   prefix_warn: "<dark_gray><bold>[</bold><gold><bold>!</bold></gold><dark_gray><bold>]</bold></dark_gray> <gold>"
   prefix_error: "<dark_gray><bold>[</bold><dark_red><bold>X</bold></dark_red><dark_gray><bold>]</bold></dark_gray> <red>"
   prefix_question: "<dark_gray><bold>[</bold><green><bold>?</bold></green><dark_gray><bold>]</bold></dark_gray> <gray>"
