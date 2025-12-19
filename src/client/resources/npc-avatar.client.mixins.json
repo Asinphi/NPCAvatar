@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "io.asinphi.npcavatar.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+      "AbstractZombieModelMixin",
+      "FiguraUserDataMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

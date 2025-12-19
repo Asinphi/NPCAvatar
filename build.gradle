@@ -51,7 +51,7 @@ loom {
 	}
 
 	mods {
-		"black-ages" {
+		"npc-avatar" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "black-ages",
+	"id": "npc-avatar",
 	"version": "${version}",
-	"name": "Black Ages",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "NPC Avatar",
+	"description": "Apply Figura avatars to any entity",
 	"authors": [
 		"Asinphi"
 	],
@@ -12,23 +12,23 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/black-ages/icon.png",
+	"icon": "assets/npc-avatar/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"io.asinphi.blackages.BlackAges"
+			"io.asinphi.npcavatar.NPCAvatar"
 		],
 		"client": [
-			"io.asinphi.blackages.BlackAgesClient"
+			"io.asinphi.npcavatar.NPCAvatarClient"
 		],
 		"fabric-datagen": [
-			"io.asinphi.blackages.BlackAgesDataGenerator"
+			"io.asinphi.npcavatar.NPCAvatarDataGenerator"
 		]
 	},
 	"mixins": [
-		"black-ages.mixins.json",
+		"npc-avatar.mixins.json",
 		{
-			"config": "black-ages.client.mixins.json",
+			"config": "npc-avatar.client.mixins.json",
 			"environment": "client"
 		}
 	],
