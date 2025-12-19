@@ -1,31 +1,45 @@
-prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
-
 commands:
   common:
-    no_entity_in_sight: "<prefix><red>No entity in sight.</red>"
-    no_targets_matched: "<prefix><red>No targets matched.</red>"
-    console_requires_target: "<prefix><red>Console must specify a target:</red> <gray>/serveravatar apply <id> <target></gray>"
+    no_entity_in_sight: "<prefix_error>No entity in sight."
+    no_targets_matched: "<prefix_error>No targets matched."
+    console_requires_target: "<prefix_error>Console must specify a target: <dark_gray>/serveravatar apply <id> <target></dark_gray>"
 
   upload:
-    invalid_id: "<prefix><red>Invalid avatar id:</red> <yellow><id></yellow>"
-    requested: "<prefix><green>Requested client upload</green> of <aqua><id></aqua> from path <gray>'<path>'</gray>."
+    invalid_id: "<prefix_error>Invalid avatar id: <yellow><id></yellow>"
+    requested: "<prefix_success>Requested client upload of <aqua><id></aqua> from path <dark_gray>'<path>'</dark_gray>."
 
   apply:
-    not_uploaded: "<prefix><red>Avatar</red> <yellow>'<id>'</yellow> <red>is not uploaded on this server.</red>"
-    applied_to_one: "<prefix><green>Applied</green> <aqua>'<id>'</aqua> <green>to</green> <yellow><target></yellow>."
-    applied_to_many: "<prefix><green>Applied</green> <aqua>'<id>'</aqua> <green>to</green> <yellow><count></yellow> <green>entity(ies).</green>"
+    not_uploaded: "<prefix_error>Avatar <yellow>'<id>'</yellow> is not uploaded on this server."
+    applied_to_one: "<prefix_success>Applied <aqua>'<id>'</aqua> to <yellow><target></yellow>."
+    applied_to_many: "<prefix_success>Applied <aqua>'<id>'</aqua> to <yellow><count></yellow> entity(ies)."
 
   copy:
-    copied_to_one: "<prefix><green>Copied avatar from</green> <yellow><source></yellow> <green>to</green> <yellow>1</yellow> <green>entity.</green>"
-    copied_to_many: "<prefix><green>Copied avatar from</green> <yellow><source></yellow> <green>to</green> <yellow><count></yellow> <green>target entity(ies).</green>"
-    console_requires_targets: "<prefix><red>Console must specify targets:</red> <gray>/serveravatar copy <source> <targets></gray>"
+    copied_to_one: "<prefix_success>Copied avatar from <yellow><source></yellow> to <yellow>1</yellow> entity."
+    copied_to_many: "<prefix_success>Copied avatar from <yellow><source></yellow> to <yellow><count></yellow> target entity(ies)."
+    console_requires_targets: "<prefix_error>Console must specify targets: <dark_gray>/serveravatar copy <source> <targets></dark_gray>"
 
   copyfromplayer:
-    requested_to_one: "<prefix><green>Requested avatar from</green> <yellow><player></yellow> <green>will apply to</green> <yellow>1</yellow> <green>entity.</green>"
-    requested_to_many: "<prefix><green>Requested avatar from</green> <yellow><player></yellow> <green>will apply to</green> <yellow><count></yellow> <green>entity(ies).</green>"
-    console_requires_targets: "<prefix><red>Console must specify targets:</red> <gray>/serveravatar copyfromplayer <player> <targets></gray>"
+    requested_to_one: "<prefix_success>Requested avatar from <yellow><player></yellow> will apply to <yellow>1</yellow> entity."
+    requested_to_many: "<prefix_success>Requested avatar from <yellow><player></yellow> will apply to <yellow><count></yellow> entity(ies)."
+    console_requires_targets: "<prefix_error>Console must specify targets: <dark_gray>/serveravatar copyfromplayer <player> <targets></dark_gray>"
 
   clear:
-    cleared_one: "<prefix><green>Cleared avatar from</green> <yellow><target></yellow><green>.</green>"
-    cleared_many: "<prefix><green>Cleared avatar from</green> <yellow><count></yellow> <green>entity(ies).</green>"
-    console_requires_target: "<prefix><red>Console must specify a target.</red>"
+    cleared_one: "<prefix_success>Cleared avatar from <yellow><target></yellow>."
+    cleared_many: "<prefix_success>Cleared avatar from <yellow><count></yellow> entity(ies)."
+    console_requires_target: "<prefix_error>Console must specify a target."
+
+global_placeholders:
+  # Brand prefix (optional to use in messages, not automatically included in status prefixes)
+  prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
+
+  # Flat status prefixes (valid MiniMessage tag names: lowercase + '_' only)
+  prefix_info: "<dark_gray><bold>[</bold><blue><bold>i</bold></blue><dark_gray><bold>]</bold></dark_gray> <gray>"
+  prefix_success: "<dark_gray><bold>[</bold><dark_green><bold>!</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
+  prefix_warn: "<dark_gray><bold>[</bold><gold><bold>!</bold></gold><dark_gray><bold>]</bold></dark_gray> <gold>"
+  prefix_error: "<dark_gray><bold>[</bold><dark_red><bold>X</bold></dark_red><dark_gray><bold>]</bold></dark_gray> <red>"
+  prefix_question: "<dark_gray><bold>[</bold><green><bold>?</bold></green><dark_gray><bold>]</bold></dark_gray> <gray>"
+  prefix_announce: "<dark_gray><bold>[</bold><dark_purple><bold>!</bold></dark_purple><dark_gray><bold>]</bold></dark_gray> <light_purple>"
+
+  # Optional flat symbols
+  symbol_right_arrow: "→"
+  symbol_bullet: "•"
