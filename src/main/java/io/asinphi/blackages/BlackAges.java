@@ -2,10 +2,10 @@ package io.asinphi.blackages;
 
 import io.asinphi.blackages.attachment.ModAttachments;
 import io.asinphi.blackages.command.ServerAvatarCommands;
+import io.asinphi.blackages.config.Lang;
 import io.asinphi.blackages.networking.ModPayloads;
 import io.asinphi.blackages.networking.ServerNetworking;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +26,15 @@ public class BlackAges implements ModInitializer {
         ModAttachments.init();
         ModPayloads.init();
         ServerNetworking.init();
+        Lang.init();
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher,
                  registryAccess, environment) ->
                         ServerAvatarCommands.register(dispatcher)
         );
-
-		LOGGER.info("Hello Fabric world!");
 	}
+
+    public static void debug(String msg, Object... args) {
+        LOGGER.info("[DEBUG] " + msg, args);
+    }
 }

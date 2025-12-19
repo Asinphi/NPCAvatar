@@ -8,14 +8,15 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.asinphi.blackages.avatar.AvatarStoreState;
 import io.asinphi.blackages.avatar.EntityAvatarManager;
+import io.asinphi.blackages.config.Lang;
 import io.asinphi.blackages.networking.payload.S2CRequestLocalUploadPayload;
 import io.asinphi.blackages.util.AvatarIdUtil;
 import io.asinphi.blackages.util.PermissionUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,15 +43,14 @@ public final class ServerAvatarCommands {
                                 .then(Commands.argument("id", StringArgumentType.string())
                                         .executes(ctx -> {
                                             // Default path = raw id (namespace-less is expected)
-                                            return requestUpload(ctx, StringArgumentType.getString(ctx, "id"),
+                                            return requestUpload(ctx,
+                                                    StringArgumentType.getString(ctx, "id"),
                                                     StringArgumentType.getString(ctx, "id"));
                                         })
                                         .then(Commands.argument("path", StringArgumentType.greedyString())
-                                                .executes(ctx -> {
-                                                    return requestUpload(ctx,
-                                                            StringArgumentType.getString(ctx, "id"),
-                                                            StringArgumentType.getString(ctx, "path"));
-                                                })
+                                                .executes(ctx -> requestUpload(ctx,
+                                                        StringArgumentType.getString(ctx, "id"),
+                                                        StringArgumentType.getString(ctx, "path")))
                                         )
                                 )
                         )
@@ -68,9 +68,7 @@ public final class ServerAvatarCommands {
                                         // 1) apply <id> (raycast) — player only
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer player)) {
-                                                ctx.getSource().sendFailure(Component.literal(
-                                                        "Console must specify a target: /serveravatar apply <id> <target>"
-                                                ));
+                                                Lang.send(ctx.getSource(), "commands.apply.console_requires_target");
                                                 return 0;
                                             }
 
@@ -79,22 +77,22 @@ public final class ServerAvatarCommands {
                                             );
 
                                             if (!AvatarStoreState.get(player.serverLevel()).contains(avatarId)) {
-                                                ctx.getSource().sendFailure(Component.literal(
-                                                        "Avatar '" + avatarId.getPath() + "' is not uploaded on this server."
-                                                ));
+                                                Lang.send(player, "commands.apply.not_uploaded",
+                                                        Placeholder.unparsed("id", avatarId.getPath()));
                                                 return 0;
                                             }
 
                                             Entity target = raycastEntity(player, MAX_DISTANCE);
                                             if (target == null) {
-                                                ctx.getSource().sendFailure(Component.literal("No entity in sight."));
+                                                Lang.send(player, "commands.common.no_entity_in_sight");
                                                 return 0;
                                             }
+
                                             EntityAvatarManager.applyAvatarId(target, avatarId);
-                                            ctx.getSource().sendSuccess(
-                                                    () -> Component.literal("Applied '" + avatarId.getPath() + "' to " + target.getDisplayName().getString()),
-                                                    true
-                                            );
+
+                                            Lang.send(player, "commands.apply.applied_to_one",
+                                                    Placeholder.unparsed("id", avatarId.getPath()),
+                                                    Placeholder.unparsed("target", target.getDisplayName().getString()));
                                             return 1;
                                         })
 
@@ -110,9 +108,8 @@ public final class ServerAvatarCommands {
                                                     ServerLevel level = ctx.getSource().getLevel();
 
                                                     if (!AvatarStoreState.get(level).contains(avatarId)) {
-                                                        ctx.getSource().sendFailure(Component.literal(
-                                                                "Avatar '" + avatarId.getPath() + "' is not uploaded on this server."
-                                                        ));
+                                                        Lang.send(ctx.getSource(), "commands.apply.not_uploaded",
+                                                                Placeholder.unparsed("id", avatarId.getPath()));
                                                         return 0;
                                                     }
 
@@ -122,10 +119,9 @@ public final class ServerAvatarCommands {
                                                     }
 
                                                     int count = targets.size();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.literal("Applied '" + avatarId.getPath() + "' to " + count + " entity(ies)."),
-                                                            true
-                                                    );
+                                                    Lang.send(ctx.getSource(), "commands.apply.applied_to_many",
+                                                            Placeholder.unparsed("id", avatarId.getPath()),
+                                                            Placeholder.unparsed("count", Integer.toString(count)));
                                                     return count;
                                                 })
                                         )
@@ -142,9 +138,7 @@ public final class ServerAvatarCommands {
                                 .then(Commands.argument("source", EntityArgument.entities())
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
-                                                ctx.getSource().sendFailure(Component.literal(
-                                                        "Console must specify targets: /serveravatar copy <source> <targets>"
-                                                ));
+                                                Lang.send(ctx.getSource(), "commands.copy.console_requires_targets");
                                                 return 0;
                                             }
 
@@ -152,34 +146,26 @@ public final class ServerAvatarCommands {
 
                                             Entity target = raycastEntity(executor, MAX_DISTANCE);
                                             if (target == null) {
-                                                ctx.getSource().sendFailure(Component.literal("No entity in sight."));
+                                                Lang.send(executor, "commands.common.no_entity_in_sight");
                                                 return 0;
                                             }
 
                                             EntityAvatarManager.copyTo(source, List.of(target));
 
-                                            ctx.getSource().sendSuccess(
-                                                    () -> Component.literal("Copied avatar from " + source.getDisplayName().getString()
-                                                            + " to 1 entity."),
-                                                    true
-                                            );
+                                            Lang.send(executor, "commands.copy.copied_to_one",
+                                                    Placeholder.unparsed("source", source.getDisplayName().getString()));
                                             return 1;
                                         })
                                         .then(Commands.argument("targets", EntityArgument.entities())
                                                 .executes(ctx -> {
-                                                    Entity source =
-                                                            EntityArgument.getEntity(ctx, "source");
-                                                    Collection<? extends Entity> targets =
-                                                            EntityArgument.getEntities(ctx, "targets");
+                                                    Entity source = EntityArgument.getEntity(ctx, "source");
+                                                    Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
 
                                                     EntityAvatarManager.copyTo(source, targets);
 
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.literal("Copied avatar from "
-                                                                    + source.getDisplayName().getString() + " to "
-                                                                    + targets.size() + " target entity(ies)."),
-                                                            true
-                                                    );
+                                                    Lang.send(ctx.getSource(), "commands.copy.copied_to_many",
+                                                            Placeholder.unparsed("source", source.getDisplayName().getString()),
+                                                            Placeholder.unparsed("count", Integer.toString(targets.size())));
                                                     return targets.size();
                                                 })
                                         )
@@ -195,9 +181,7 @@ public final class ServerAvatarCommands {
                                         // 1) copyfromplayer <player>  (raycast fallback, player executor only)
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
-                                                ctx.getSource().sendFailure(Component.literal(
-                                                        "Console must specify targets: /serveravatar copyfromplayer <player> <targets>"
-                                                ));
+                                                Lang.send(ctx.getSource(), "commands.copyfromplayer.console_requires_targets");
                                                 return 0;
                                             }
 
@@ -205,36 +189,32 @@ public final class ServerAvatarCommands {
 
                                             Entity target = raycastEntity(executor, MAX_DISTANCE);
                                             if (target == null) {
-                                                ctx.getSource().sendFailure(Component.literal("No entity in sight."));
+                                                Lang.send(executor, "commands.common.no_entity_in_sight");
                                                 return 0;
                                             }
 
                                             EntityAvatarManager.copyTo(sourcePlayer, List.of(target));
 
-                                            ctx.getSource().sendSuccess(
-                                                    () -> Component.literal("Requested avatar from " + sourcePlayer.getName().getString()
-                                                            + " will apply to 1 entity."),
-                                                    true
-                                            );
+                                            Lang.send(executor, "commands.copyfromplayer.requested_to_one",
+                                                    Placeholder.unparsed("player", sourcePlayer.getName().getString()));
                                             return 1;
                                         })
 
-                                        // 2) applyfromplayer <player> <targets>  (selectors/UUID/name; console-friendly)
+                                        // 2) copyfromplayer <player> <targets>  (selectors/UUID/name; console-friendly)
                                         .then(Commands.argument("targets", EntityArgument.entities())
                                                 .executes(ctx -> {
                                                     ServerPlayer sourcePlayer = EntityArgument.getPlayer(ctx, "player");
                                                     Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
                                                     if (targets.isEmpty()) {
-                                                        ctx.getSource().sendFailure(Component.literal("No targets matched."));
+                                                        Lang.send(ctx.getSource(), "commands.common.no_targets_matched");
                                                         return 0;
                                                     }
 
                                                     int count = EntityAvatarManager.copyTo(sourcePlayer, targets);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.literal("Requested avatar from " + sourcePlayer.getName().getString()
-                                                                    + " will apply to " + count + " entity(ies)."),
-                                                            true
-                                                    );
+
+                                                    Lang.send(ctx.getSource(), "commands.copyfromplayer.requested_to_many",
+                                                            Placeholder.unparsed("player", sourcePlayer.getName().getString()),
+                                                            Placeholder.unparsed("count", Integer.toString(count)));
                                                     return count;
                                                 })
                                         )
@@ -255,22 +235,20 @@ public final class ServerAvatarCommands {
                                     Entity executor = src.getEntity();
 
                                     if (!(executor instanceof ServerPlayer player)) {
-                                        src.sendFailure(Component.literal("Console must specify a target."));
+                                        Lang.send(src, "commands.clear.console_requires_target");
                                         return 0;
                                     }
 
                                     Entity target = raycastEntity(player, MAX_DISTANCE);
                                     if (target == null) {
-                                        src.sendFailure(Component.literal("No entity in sight."));
+                                        Lang.send(player, "commands.common.no_entity_in_sight");
                                         return 0;
                                     }
 
                                     EntityAvatarManager.clearAvatarFromEntity(target);
 
-                                    src.sendSuccess(
-                                            () -> Component.literal("Cleared avatar from " + target.getDisplayName().getString()),
-                                            true
-                                    );
+                                    Lang.send(player, "commands.clear.cleared_one",
+                                            Placeholder.unparsed("target", target.getDisplayName().getString()));
                                     return 1;
                                 })
 
@@ -286,15 +264,13 @@ public final class ServerAvatarCommands {
                                                 count++;
                                             }
 
-                                            int finalCount = count;
-                                            ctx.getSource().sendSuccess(
-                                                    () -> Component.literal("Cleared avatar from " + finalCount + " entity(ies)."),
-                                                    true
-                                            );
+                                            Lang.send(ctx.getSource(), "commands.clear.cleared_many",
+                                                    Placeholder.unparsed("count", Integer.toString(count)));
                                             return count;
                                         })
                                 )
-        ));
+                        )
+        );
     }
 
     private static CompletableFuture<Suggestions> suggestUploadedAvatarIds(
@@ -325,17 +301,17 @@ public final class ServerAvatarCommands {
         try {
             avatarId = AvatarIdUtil.parseWithDefaultNamespace(rawId);
         } catch (Exception e) {
-            ctx.getSource().sendFailure(Component.literal("Invalid avatar id: " + rawId));
+            Lang.send(player, "commands.upload.invalid_id",
+                    Placeholder.unparsed("id", rawId));
             return 0;
         }
 
         // Ask the client to load rawPath relative to figura/avatars (or absolute if they provide it)
         ServerPlayNetworking.send(player, new S2CRequestLocalUploadPayload(avatarId, rawPath));
 
-        ctx.getSource().sendSuccess(
-                () -> Component.literal("Requested client upload of '" + avatarId + "' from path '" + rawPath + "'."),
-                false
-        );
+        Lang.send(player, "commands.upload.requested",
+                Placeholder.unparsed("id", avatarId.getPath()),
+                Placeholder.unparsed("path", rawPath));
         return 1;
     }
 

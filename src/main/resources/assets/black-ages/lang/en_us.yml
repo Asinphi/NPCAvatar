@@ -1,0 +1,31 @@
+prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
+
+commands:
+  common:
+    no_entity_in_sight: "<prefix><red>No entity in sight.</red>"
+    no_targets_matched: "<prefix><red>No targets matched.</red>"
+    console_requires_target: "<prefix><red>Console must specify a target:</red> <gray>/serveravatar apply <id> <target></gray>"
+
+  upload:
+    invalid_id: "<prefix><red>Invalid avatar id:</red> <yellow><id></yellow>"
+    requested: "<prefix><green>Requested client upload</green> of <aqua><id></aqua> from path <gray>'<path>'</gray>."
+
+  apply:
+    not_uploaded: "<prefix><red>Avatar</red> <yellow>'<id>'</yellow> <red>is not uploaded on this server.</red>"
+    applied_to_one: "<prefix><green>Applied</green> <aqua>'<id>'</aqua> <green>to</green> <yellow><target></yellow>."
+    applied_to_many: "<prefix><green>Applied</green> <aqua>'<id>'</aqua> <green>to</green> <yellow><count></yellow> <green>entity(ies).</green>"
+
+  copy:
+    copied_to_one: "<prefix><green>Copied avatar from</green> <yellow><source></yellow> <green>to</green> <yellow>1</yellow> <green>entity.</green>"
+    copied_to_many: "<prefix><green>Copied avatar from</green> <yellow><source></yellow> <green>to</green> <yellow><count></yellow> <green>target entity(ies).</green>"
+    console_requires_targets: "<prefix><red>Console must specify targets:</red> <gray>/serveravatar copy <source> <targets></gray>"
+
+  copyfromplayer:
+    requested_to_one: "<prefix><green>Requested avatar from</green> <yellow><player></yellow> <green>will apply to</green> <yellow>1</yellow> <green>entity.</green>"
+    requested_to_many: "<prefix><green>Requested avatar from</green> <yellow><player></yellow> <green>will apply to</green> <yellow><count></yellow> <green>entity(ies).</green>"
+    console_requires_targets: "<prefix><red>Console must specify targets:</red> <gray>/serveravatar copyfromplayer <player> <targets></gray>"
+
+  clear:
+    cleared_one: "<prefix><green>Cleared avatar from</green> <yellow><target></yellow><green>.</green>"
+    cleared_many: "<prefix><green>Cleared avatar from</green> <yellow><count></yellow> <green>entity(ies).</green>"
+    console_requires_target: "<prefix><red>Console must specify a target.</red>"

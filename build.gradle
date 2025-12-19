@@ -21,9 +21,17 @@ repositories {
         url = 'https://maven.parchmentmc.org'
     }
 
+	maven {
+		name = 'sonatype-oss-snapshots1'
+		url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+		mavenContent { snapshotsOnly() }
+	}
+
     maven { url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
 
     maven { url = "https://maven.figuramc.org/releases" }
+
+	mavenCentral()
 
     exclusiveContent {
         forRepository { maven { url = "https://api.modrinth.com/maven" } }
@@ -34,13 +42,20 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	runs {
+		client {
+			vmArg "-XX:+AllowEnhancedClassRedefinition"
+			vmArg "-Ddevauth.enabled=true"
+			vmArg "-Ddevauth.account=main"
+		}
+	}
+
 	mods {
 		"black-ages" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
 	}
-
 }
 
 fabricApi {
@@ -60,6 +75,10 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	modImplementation include('net.kyori:adventure-platform-fabric:5.14.1')
+
+	include(implementation 'org.yaml:snakeyaml:2.2')
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
 
