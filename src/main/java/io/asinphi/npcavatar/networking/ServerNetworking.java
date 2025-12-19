@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -144,10 +143,6 @@ public final class ServerNetworking {
         PENDING_PLAYER_AVATAR.put(requestId, new PendingAvatarRequest(player.getUUID(), targetRefs,
                 System.currentTimeMillis()));
 
-        player.sendSystemMessage(Component.literal(
-                "[npcavatar] going to request avatar from you to apply to " + targetRefs.size() + " targets"
-        ));
-
         // Ask that client to send back their current avatar blob.
         ServerPlayNetworking.send(player, new S2CRequestPlayerAvatarPayload(requestId));
         return requestId;
@@ -167,27 +162,17 @@ public final class ServerNetworking {
         byte[] data = payload.compressedAvatarNbt();
         if (data == null) data = new byte[0];
 
-        sender.sendSystemMessage(Component.literal(
-                "[npcavatar] received avatar blob req " + payload.requestId() + " bytes=" + data.length
-        ));
-
         // Apply to each target entity if it still exists.
         MinecraftServer server = sender.getServer();
         if (server == null) return;
 
         for (TargetEntityRef target : pending.targets()) {
             Entity ent = findEntity(server, target);
-            sender.sendSystemMessage(Component.literal(
-                    "[npcavatar] searching for entity " + target.entityId() + " to attach blob data to"
-            ));
             if (ent == null) continue;
 
             // AttachmentType<byte[]> AVATAR_BLOB (persistent + synced)
             ent.setAttached(ModAttachments.AVATAR_BLOB, data);
             ent.setAttached(ModAttachments.HAS_AVATAR_BLOB, true);
-            sender.sendSystemMessage(Component.literal(
-                    "[npcavatar] attached avatar_blob data to an entity"
-            ));
         }
     }
 

@@ -19,25 +19,9 @@ public final class ClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(ModPackets.S2C_REQUEST_LOCAL_UPLOAD, (payload, context) -> {
             var mc = Minecraft.getInstance();
 
-            mc.execute(() -> {
-                if (mc.player != null) {
-                    mc.player.sendSystemMessage(Component.literal(
-                            "[npcavatar] Requested upload " + payload.avatarId() +
-                                    " from '" + payload.relativePath() + "'"
-                    ));
-                }
-            });
-
             FiguraBridge.loadLocalAvatarRelativeToFiguraAvatarsAsync(payload.relativePath())
                     .thenAccept(bytes -> {
                         ClientPlayNetworking.send(new C2SUploadAvatarPayload(payload.avatarId(), bytes));
-                        mc.execute(() -> {
-                            if (mc.player != null) {
-                                mc.player.sendSystemMessage(Component.literal(
-                                        "[npcavatar] Uploading " + payload.avatarId() + " (" + bytes.length + " bytes)…"
-                                ));
-                            }
-                        });
                     })
                     .exceptionally(err -> {
                         mc.execute(() -> {
@@ -83,13 +67,6 @@ public final class ClientNetworking {
 
                 // If player has no avatar (or Figura not ready), reply with empty bytes.
                 if (compressed == null) compressed = new byte[0];
-
-                var player = Minecraft.getInstance().player;
-                if (player != null) {
-                    player.sendSystemMessage(Component.literal(
-                            "[npcavatar] replying avatar blob req " + payload.requestId() + " bytes=" + compressed.length
-                    ));
-                }
 
                 ClientPlayNetworking.send(new C2SPlayerAvatarBlobPayload(payload.requestId(), compressed));
             });
