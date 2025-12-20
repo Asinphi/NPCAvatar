@@ -1,0 +1,45 @@
+commands:
+  common:
+    no_entity_in_sight: "<prefixes.error>视线范围内没有任何实体。"
+    no_targets_matched: "<prefixes.error>没有匹配到任何目标。"
+    console_requires_target: "<prefixes.error>控制台必须指定目标：<dark_gray>/serveravatar apply <id> <target></dark_gray>"
+
+  upload:
+    invalid_id: "<prefixes.error>无效的头像 ID：<yellow><id></yellow>"
+    requested: "<prefixes.success>已请求客户端上传头像 <aqua><id></aqua>，路径：<dark_gray>'<path>'</dark_gray>。"
+
+  apply:
+    not_uploaded: "<prefixes.error>头像 <yellow>'<id>'</yellow> 尚未上传到服务器。"
+    applied_to_one: "<prefixes.success>已将头像 <aqua>'<id>'</aqua> 应用到 <yellow><target></yellow>。"
+    applied_to_many: "<prefixes.success>已将头像 <aqua>'<id>'</aqua> 应用到 <yellow><count></yellow> 个实体。"
+
+  copy:
+    copied_to_one: "<prefixes.success>已将 <yellow><source></yellow> 的头像复制到 <yellow>1</yellow> 个实体。"
+    copied_to_many: "<prefixes.success>已将 <yellow><source></yellow> 的头像复制到 <yellow><count></yellow> 个目标实体。"
+    console_requires_targets: "<prefixes.error>控制台必须指定目标：<dark_gray>/serveravatar copy <source> <targets></dark_gray>"
+
+  copyfromplayer:
+    requested_to_one: "<prefixes.success>已请求玩家 <yellow><player></yellow> 的头像，将应用到 <yellow>1</yellow> 个实体。"
+    requested_to_many: "<prefixes.success>已请求玩家 <yellow><player></yellow> 的头像，将应用到 <yellow><count></yellow> 个实体。"
+    console_requires_targets: "<prefixes.error>控制台必须指定目标：<dark_gray>/serveravatar copyfromplayer <player> <targets></dark_gray>"
+
+  clear:
+    cleared_one: "<prefixes.success>已清除 <yellow><target></yellow> 的头像。"
+    cleared_many: "<prefixes.success>已清除 <yellow><count></yellow> 个实体的头像。"
+    console_requires_target: "<prefixes.error>控制台必须指定一个目标。"
+
+global_placeholders:
+  # 品牌前缀（可选，不会自动附加到状态前缀中）
+  prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
+
+  prefixes:
+    info: "<dark_gray><bold>[</bold><blue><bold>i</bold></blue><dark_gray><bold>]</bold></dark_gray> <gray>"
+    success: "<dark_gray><bold>[</bold><dark_green><bold>✔</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
+    warn: "<dark_gray><bold>[</bold><gold><bold>!</bold></gold><dark_gray><bold>]</bold></dark_gray> <gold>"
+    error: "<dark_gray><bold>[</bold><dark_red><bold>X</bold></dark_red><dark_gray><bold>]</bold></dark_gray> <red>"
+    question: "<dark_gray><bold>[</bold><green><bold>?</bold></green><dark_gray><bold>]</bold></dark_gray> <gray>"
+    announce: "<dark_gray><bold>[</bold><dark_purple><bold>!</bold></dark_purple><dark_gray><bold>]</bold></dark_gray> <light_purple>"
+
+  symbols:
+    right_arrow: "→"
+    bullet: "•"

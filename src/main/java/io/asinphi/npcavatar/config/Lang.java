@@ -25,6 +25,10 @@ public final class Lang {
     private static final String GLOBAL_PLACEHOLDERS_ROOT = "global_placeholders";
     private static final Path LANG_DIR =
             FabricLoader.getInstance().getConfigDir().resolve("NPCAvatar").resolve("lang");
+    private static final List<String> BUNDLED_LOCALES = List.of(
+            "en_us",
+            "zh_cn"
+    );
 
     private static final MiniMessage MM = MiniMessage.builder()
             .tags(TagResolver.builder().resolver(StandardTags.defaults()).build())
@@ -379,13 +383,21 @@ public final class Lang {
         try {
             Files.createDirectories(LANG_DIR);
 
-            Path target = LANG_DIR.resolve(DEFAULT_LOCALE + ".yml");
-            if (Files.exists(target)) return;
+            for (String locale : BUNDLED_LOCALES) {
+                Path target = LANG_DIR.resolve(locale + ".yml");
+                if (Files.exists(target)) continue;
 
-            String resourcePath = "assets/" + NPCAvatar.MOD_ID + "/lang/" + DEFAULT_LOCALE + ".yml";
-            try (var in = Lang.class.getClassLoader().getResourceAsStream(resourcePath)) {
-                if (in == null) throw new IllegalStateException("Missing bundled lang file: " + resourcePath);
-                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                String resourcePath = "assets/" + NPCAvatar.MOD_ID + "/lang/" + locale + ".yml";
+                try (var in = Lang.class.getClassLoader().getResourceAsStream(resourcePath)) {
+                    if (in == null) {
+                        // Don't fail server startup just because an optional locale is missing
+                        if (DEFAULT_LOCALE.equals(locale)) {
+                            throw new IllegalStateException("Missing bundled lang file: " + resourcePath);
+                        }
+                        continue;
+                    }
+                    Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to init lang directory/files", e);
