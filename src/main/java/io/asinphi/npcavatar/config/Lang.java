@@ -81,6 +81,7 @@ public final class Lang {
     }
 
     public static void reload() {
+        ensureDefaults();
         Set<String> tags = new HashSet<>(bundles.keySet());
         tags.addAll(globals.keySet());
         tags.add(DEFAULT_LOCALE);
