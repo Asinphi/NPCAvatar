@@ -1,8 +1,25 @@
 package io.asinphi.npcavatar.util;
 
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class PermissionUtil {
+
+    /**
+     * Permission check for any command source (player, console, command block, function).
+     * <p>
+     * - Players: permissions API (if present) or op-level fallback
+     * - Non-players: vanilla permission level only
+     */
+    public static boolean check(CommandSourceStack source, String node, int fallbackOpLevel) {
+        // Console / command blocks / functions
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            return source.hasPermission(fallbackOpLevel);
+        }
+
+        // Player case → delegate
+        return check(player, node, fallbackOpLevel);
+    }
 
     /**
      * Returns true if the player is allowed. If fabric-permissions-api is installed,

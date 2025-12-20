@@ -55,13 +55,8 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("apply")
-                                .requires(src -> {
-                                    if (src.getEntity() instanceof ServerPlayer player) {
-                                        return PermissionUtil.check(player, "npcavatar.apply", 2);
-                                    }
-                                    // console / command blocks / functions
-                                    return src.hasPermission(2);
-                                })
+                                .requires(src -> PermissionUtil.check(
+                                        src, "npcavatar.apply", 2))
                                 .then(Commands.argument("avatarId", StringArgumentType.string())
                                         .suggests(ServerAvatarCommands::suggestUploadedAvatarIds)
 
@@ -128,13 +123,8 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("copy")
-                                .requires(src -> {
-                                    if (src.getEntity() instanceof ServerPlayer player) {
-                                        return PermissionUtil.check(player, "npcavatar.apply", 2);
-                                    }
-                                    // console / command blocks / functions
-                                    return src.hasPermission(2);
-                                })
+                                .requires(src -> PermissionUtil.check(
+                                        src, "npcavatar.apply", 2))
                                 .then(Commands.argument("source", EntityArgument.entities())
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
@@ -174,7 +164,8 @@ public final class ServerAvatarCommands {
                         .then(Commands.literal("copyfromplayer")
                                 .requires(src ->
                                         // allow console too; only gate permission when a player is the executor
-                                        !(src.getEntity() instanceof ServerPlayer p) || PermissionUtil.check(p, "npcavatar.apply", 2)
+                                        !(src.getEntity() instanceof ServerPlayer p) || PermissionUtil.check(
+                                                p, "npcavatar.apply", 2)
                                 )
                                 .then(Commands.argument("player", EntityArgument.player())
 
@@ -221,13 +212,8 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("clear")
-                                .requires(src -> {
-                                    if (src.getEntity() instanceof ServerPlayer player) {
-                                        return PermissionUtil.check(player, "npcavatar.apply", 2);
-                                    }
-                                    // console / command blocks / functions
-                                    return src.hasPermission(2);
-                                })
+                                .requires(src -> PermissionUtil.check(
+                                        src, "npcavatar.apply", 2))
 
                                 // 1) clear   (raycast fallback if player)
                                 .executes(ctx -> {
