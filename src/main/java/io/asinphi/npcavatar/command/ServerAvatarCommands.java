@@ -60,7 +60,7 @@ public final class ServerAvatarCommands {
                                             // Default path = raw id (namespace-less is expected)
                                             return requestUpload(ctx,
                                                     StringArgumentType.getString(ctx, "id"),
-                                                    StringArgumentType.getString(ctx, "id"));
+                                                    "");
                                         })
                                         .then(Commands.argument("path", StringArgumentType.greedyString())
                                                 .executes(ctx -> requestUpload(ctx,
@@ -312,7 +312,8 @@ public final class ServerAvatarCommands {
 
         Lang.send(player, "commands.upload.requested",
                 Placeholder.unparsed("id", avatarId.getPath()),
-                Placeholder.unparsed("path", rawPath));
+                Placeholder.unparsed("path",
+                        rawPath.isEmpty() ? "folder '" + rawPath + "'" : "your current avatar"));
         return 1;
     }
 

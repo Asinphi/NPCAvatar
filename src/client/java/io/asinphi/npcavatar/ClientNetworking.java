@@ -19,6 +19,12 @@ public final class ClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(ModPackets.S2C_REQUEST_LOCAL_UPLOAD, (payload, context) -> {
             var mc = Minecraft.getInstance();
 
+            if (payload.relativePath().isEmpty()) {
+                ClientPlayNetworking.send(new C2SUploadAvatarPayload(payload.avatarId(),
+                        FiguraBridge.getLocalPlayerAvatarCompressed()));
+                return;
+            }
+
             FiguraBridge.loadLocalAvatarRelativeToFiguraAvatarsAsync(payload.relativePath())
                     .thenAccept(bytes -> {
                         ClientPlayNetworking.send(new C2SUploadAvatarPayload(payload.avatarId(), bytes));
