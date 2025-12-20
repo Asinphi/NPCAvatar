@@ -29,6 +29,7 @@ public final class Lang {
             "en_us",
             "zh_cn"
     );
+    private static final int MAX_MISSING_KEYS_LOGGED = 8;
 
     private static final MiniMessage MM = MiniMessage.builder()
             .tags(TagResolver.builder().resolver(StandardTags.defaults()).build())
@@ -91,6 +92,8 @@ public final class Lang {
         for (String tag : tags) {
             loadLocale(tag);
         }
+
+        checkCompleteness(tags);
     }
 
     public static void send(ServerPlayer player, String key, TagResolver... placeholders) {
@@ -401,6 +404,53 @@ public final class Lang {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to init lang directory/files", e);
+        }
+    }
+
+    private static void checkCompleteness(Set<String> loadedTags) {
+        Map<String, String> base = bundles.get(DEFAULT_LOCALE);
+        if (base == null || base.isEmpty()) {
+            NPCAvatar.LOGGER.warn("[Lang] Default locale '{}' is empty or missing; cannot check completeness.",
+                    DEFAULT_LOCALE);
+            return;
+        }
+
+        Set<String> baseKeys = base.keySet();
+
+        for (String tag : loadedTags) {
+            if (DEFAULT_LOCALE.equals(tag)) continue;
+
+            Map<String, String> locale = bundles.get(tag);
+            if (locale == null || locale.isEmpty()) continue;
+
+            // Missing keys
+            List<String> missing = baseKeys.stream()
+                    .filter(k -> !locale.containsKey(k))
+                    .toList();
+
+            if (!missing.isEmpty()) {
+                NPCAvatar.LOGGER.warn(
+                        "[Lang] Locale '{}' is missing {} key(s). Example(s): {}",
+                        tag,
+                        missing.size(),
+                        String.join(", ", missing.subList(0, Math.min(missing.size(), MAX_MISSING_KEYS_LOGGED)))
+                );
+            }
+
+            // Optional: extra keys (often useful during cleanup)
+            List<String> extra = locale.keySet().stream()
+                    .filter(k -> !baseKeys.contains(k))
+                    .toList();
+
+            if (!extra.isEmpty()) {
+                NPCAvatar.LOGGER.debug(
+                        "[Lang] Locale '{}' has {} extra key(s) not in {} (first few): {}",
+                        tag,
+                        extra.size(),
+                        DEFAULT_LOCALE,
+                        String.join(", ", extra.subList(0, Math.min(extra.size(), MAX_MISSING_KEYS_LOGGED)))
+                );
+            }
         }
     }
 
