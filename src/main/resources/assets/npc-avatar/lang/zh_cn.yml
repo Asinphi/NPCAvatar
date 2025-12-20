@@ -28,6 +28,9 @@ commands:
     cleared_many: "<prefixes.success>已清除 <yellow><count></yellow> 个实体的头像。"
     console_requires_target: "<prefixes.error>控制台必须指定一个目标。"
 
+  reload:
+    completed: "<prefixes.success>重载完成。"
+
 global_placeholders:
   # 品牌前缀（可选，不会自动附加到状态前缀中）
   prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "

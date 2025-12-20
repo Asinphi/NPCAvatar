@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import io.asinphi.npcavatar.NPCAvatar;
 import io.asinphi.npcavatar.avatar.AvatarStoreState;
 import io.asinphi.npcavatar.avatar.EntityAvatarManager;
 import io.asinphi.npcavatar.config.Lang;
@@ -37,6 +38,14 @@ public final class ServerAvatarCommands {
                 Commands.literal("npcavatar")
                         .requires(src -> PermissionUtil.check(
                                 src, "npcavatar.use", 2))
+                        .then(Commands.literal("reload")
+                        .requires(src -> PermissionUtil.check(
+                                        src, "npcavatar.reload", 4))
+                                .executes(ctx -> {
+                                    NPCAvatar.reload();
+                                    Lang.send(ctx.getSource(), "commands.reload.completed");
+                                    return 1;
+                                }))
                         .then(Commands.literal("upload")
                                 .requires(src ->
                                         src.getEntity() instanceof ServerPlayer player &&

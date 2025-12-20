@@ -34,6 +34,10 @@ public class NPCAvatar implements ModInitializer {
         );
 	}
 
+    public static void reload() {
+        Lang.reload();
+    }
+
     public static void debug(String msg, Object... args) {
         LOGGER.info("[DEBUG] " + msg, args);
     }

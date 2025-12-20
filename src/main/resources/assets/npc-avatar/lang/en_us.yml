@@ -28,6 +28,9 @@ commands:
     cleared_many: "<prefixes.success>Cleared avatar from <yellow><count></yellow> entity(ies)."
     console_requires_target: "<prefixes.error>Console must specify a target."
 
+  reload:
+    completed: "<prefixes.success>Reload complete."
+
 global_placeholders:
   # Brand prefix (optional; not automatically included in status prefixes unless you add it)
   prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
