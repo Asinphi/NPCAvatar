@@ -38,6 +38,10 @@ public final class ServerAvatarCommands {
                 Commands.literal("npcavatar")
                         .requires(src -> PermissionUtil.check(
                                 src, "npcavatar.use", 2))
+                        .executes(ctx -> {
+                            Lang.send(ctx.getSource(), "commands.help");
+                            return 1;
+                        })
                         .then(Commands.literal("reload")
                         .requires(src -> PermissionUtil.check(
                                         src, "npcavatar.reload", 4))
