@@ -1,45 +1,45 @@
 commands:
   common:
-    no_entity_in_sight: "<prefix_error>No entity in sight."
-    no_targets_matched: "<prefix_error>No targets matched."
-    console_requires_target: "<prefix_error>Console must specify a target: <dark_gray>/serveravatar apply <id> <target></dark_gray>"
+    no_entity_in_sight: "<prefixes.error>No entity in sight."
+    no_targets_matched: "<prefixes.error>No targets matched."
+    console_requires_target: "<prefixes.error>Console must specify a target: <dark_gray>/serveravatar apply <id> <target></dark_gray>"
 
   upload:
-    invalid_id: "<prefix_error>Invalid avatar id: <yellow><id></yellow>"
-    requested: "<prefix_success>Requested client upload of <aqua><id></aqua> from path <dark_gray>'<path>'</dark_gray>."
+    invalid_id: "<prefixes.error>Invalid avatar id: <yellow><id></yellow>"
+    requested: "<prefixes.success>Requested client upload of <aqua><id></aqua> from path <dark_gray>'<path>'</dark_gray>."
 
   apply:
-    not_uploaded: "<prefix_error>Avatar <yellow>'<id>'</yellow> is not uploaded on this server."
-    applied_to_one: "<prefix_success>Applied <aqua>'<id>'</aqua> to <yellow><target></yellow>."
-    applied_to_many: "<prefix_success>Applied <aqua>'<id>'</aqua> to <yellow><count></yellow> entity(ies)."
+    not_uploaded: "<prefixes.error>Avatar <yellow>'<id>'</yellow> is not uploaded on this server."
+    applied_to_one: "<prefixes.success>Applied <aqua>'<id>'</aqua> to <yellow><target></yellow>."
+    applied_to_many: "<prefixes.success>Applied <aqua>'<id>'</aqua> to <yellow><count></yellow> entity(ies)."
 
   copy:
-    copied_to_one: "<prefix_success>Copied avatar from <yellow><source></yellow> to <yellow>1</yellow> entity."
-    copied_to_many: "<prefix_success>Copied avatar from <yellow><source></yellow> to <yellow><count></yellow> target entity(ies)."
-    console_requires_targets: "<prefix_error>Console must specify targets: <dark_gray>/serveravatar copy <source> <targets></dark_gray>"
+    copied_to_one: "<prefixes.success>Copied avatar from <yellow><source></yellow> to <yellow>1</yellow> entity."
+    copied_to_many: "<prefixes.success>Copied avatar from <yellow><source></yellow> to <yellow><count></yellow> target entity(ies)."
+    console_requires_targets: "<prefixes.error>Console must specify targets: <dark_gray>/serveravatar copy <source> <targets></dark_gray>"
 
   copyfromplayer:
-    requested_to_one: "<prefix_success>Requested avatar from <yellow><player></yellow> will apply to <yellow>1</yellow> entity."
-    requested_to_many: "<prefix_success>Requested avatar from <yellow><player></yellow> will apply to <yellow><count></yellow> entity(ies)."
-    console_requires_targets: "<prefix_error>Console must specify targets: <dark_gray>/serveravatar copyfromplayer <player> <targets></dark_gray>"
+    requested_to_one: "<prefixes.success>Requested avatar from <yellow><player></yellow> will apply to <yellow>1</yellow> entity."
+    requested_to_many: "<prefixes.success>Requested avatar from <yellow><player></yellow> will apply to <yellow><count></yellow> entity(ies)."
+    console_requires_targets: "<prefixes.error>Console must specify targets: <dark_gray>/serveravatar copyfromplayer <player> <targets></dark_gray>"
 
   clear:
-    cleared_one: "<prefix_success>Cleared avatar from <yellow><target></yellow>."
-    cleared_many: "<prefix_success>Cleared avatar from <yellow><count></yellow> entity(ies)."
-    console_requires_target: "<prefix_error>Console must specify a target."
+    cleared_one: "<prefixes.success>Cleared avatar from <yellow><target></yellow>."
+    cleared_many: "<prefixes.success>Cleared avatar from <yellow><count></yellow> entity(ies)."
+    console_requires_target: "<prefixes.error>Console must specify a target."
 
 global_placeholders:
-  # Brand prefix (optional to use in messages, not automatically included in status prefixes)
+  # Brand prefix (optional; not automatically included in status prefixes unless you add it)
   prefix: "<gray>[<gradient:#9339bd:#4e46c2>NPC Avatar</gradient>]</gray> "
 
-  # Flat status prefixes (valid MiniMessage tag names: lowercase + '_' only)
-  prefix_info: "<dark_gray><bold>[</bold><blue><bold>i</bold></blue><dark_gray><bold>]</bold></dark_gray> <gray>"
-  prefix_success: "<dark_gray><bold>[</bold><dark_green><bold>✔</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
-  prefix_warn: "<dark_gray><bold>[</bold><gold><bold>!</bold></gold><dark_gray><bold>]</bold></dark_gray> <gold>"
-  prefix_error: "<dark_gray><bold>[</bold><dark_red><bold>X</bold></dark_red><dark_gray><bold>]</bold></dark_gray> <red>"
-  prefix_question: "<dark_gray><bold>[</bold><green><bold>?</bold></green><dark_gray><bold>]</bold></dark_gray> <gray>"
-  prefix_announce: "<dark_gray><bold>[</bold><dark_purple><bold>!</bold></dark_purple><dark_gray><bold>]</bold></dark_gray> <light_purple>"
+  prefixes:
+    info: "<dark_gray><bold>[</bold><blue><bold>i</bold></blue><dark_gray><bold>]</bold></dark_gray> <gray>"
+    success: "<dark_gray><bold>[</bold><dark_green><bold>✔</bold></dark_green><dark_gray><bold>]</bold></dark_gray> <gray>"
+    warn: "<dark_gray><bold>[</bold><gold><bold>!</bold></gold><dark_gray><bold>]</bold></dark_gray> <gold>"
+    error: "<dark_gray><bold>[</bold><dark_red><bold>X</bold></dark_red><dark_gray><bold>]</bold></dark_gray> <red>"
+    question: "<dark_gray><bold>[</bold><green><bold>?</bold></green><dark_gray><bold>]</bold></dark_gray> <gray>"
+    announce: "<dark_gray><bold>[</bold><dark_purple><bold>!</bold></dark_purple><dark_gray><bold>]</bold></dark_gray> <light_purple>"
 
-  # Optional flat symbols
-  symbol_right_arrow: "→"
-  symbol_bullet: "•"
+  symbols:
+    right_arrow: "→"
+    bullet: "•"
