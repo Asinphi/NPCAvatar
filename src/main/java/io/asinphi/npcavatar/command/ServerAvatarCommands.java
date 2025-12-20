@@ -35,6 +35,8 @@ public final class ServerAvatarCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("npcavatar")
+                        .requires(src -> PermissionUtil.check(
+                                src, "npcavatar.use", 2))
                         .then(Commands.literal("upload")
                                 .requires(src ->
                                         src.getEntity() instanceof ServerPlayer player &&
