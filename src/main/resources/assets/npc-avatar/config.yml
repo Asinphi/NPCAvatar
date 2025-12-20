@@ -1,0 +1,9 @@
+# Controls whether zombie arm animations should use human-style animations.
+#
+# 0 = Never use human arm animations for zombies
+# 1 = Only use human arm animations for zombies with an avatar override (default)
+# 2 = Always use human arm animations for all zombies
+humanize_zombie_arms: 1
+
+# Do not change this value unless you know what you are doing!
+config_version: 1

@@ -12,6 +12,14 @@ import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
 public class EntityAvatarManager {
+    public static boolean hasAvatarOverride(Entity target) {
+        Boolean hasBlob = target.getAttached(ModAttachments.HAS_AVATAR_BLOB);
+        if (Boolean.TRUE.equals(hasBlob))
+            return true;
+        ResourceLocation avatarId = target.getAttached(ModAttachments.AVATAR_ID);
+        return avatarId != null && !avatarId.equals(ModAttachments.NONE);
+    }
+
     public static void applyAvatarId(Entity target, ResourceLocation avatarId) {
         target.setAttached(ModAttachments.AVATAR_ID, avatarId);
         target.setAttached(ModAttachments.HAS_AVATAR_BLOB, false);

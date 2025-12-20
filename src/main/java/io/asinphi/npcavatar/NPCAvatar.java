@@ -2,6 +2,7 @@ package io.asinphi.npcavatar;
 
 import io.asinphi.npcavatar.attachment.ModAttachments;
 import io.asinphi.npcavatar.command.ServerAvatarCommands;
+import io.asinphi.npcavatar.config.Config;
 import io.asinphi.npcavatar.config.Lang;
 import io.asinphi.npcavatar.networking.ModPayloads;
 import io.asinphi.npcavatar.networking.ServerNetworking;
@@ -27,6 +28,7 @@ public class NPCAvatar implements ModInitializer {
         ModPayloads.init();
         ServerNetworking.init();
         Lang.init();
+        Config.load();
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher,
                  registryAccess, environment) ->
@@ -36,6 +38,7 @@ public class NPCAvatar implements ModInitializer {
 
     public static void reload() {
         Lang.reload();
+        Config.reload();
     }
 
     public static void debug(String msg, Object... args) {

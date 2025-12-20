@@ -1,6 +1,8 @@
 package io.asinphi.npcavatar.mixin.client;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import io.asinphi.npcavatar.avatar.EntityAvatarManager;
+import io.asinphi.npcavatar.config.Config;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,6 +30,8 @@ public abstract class AbstractZombieModelMixin<T extends net.minecraft.world.ent
     @Unique
     private boolean shouldCancelZombieArms(T entity) {
 //        return entity.getTags().contains("npcavatar:player_arms");
-        return true;
+        if (Config.humanizeZombieArms() != 1)
+            return Config.humanizeZombieArms() == 2;
+        return EntityAvatarManager.hasAvatarOverride(entity);
     }
 }
