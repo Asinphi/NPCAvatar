@@ -42,8 +42,7 @@ public final class ModAttachments {
                                 return out;
                             },
                             ByteBuffer::wrap
-                    ))
-                    .syncWith(ByteBufCodecs.BYTE_ARRAY, (entity, player) -> true));
+                    )));
 
     /** Call from common init to guarantee class loading & registration. */
     public static void init() {
