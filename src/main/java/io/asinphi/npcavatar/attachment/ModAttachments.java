@@ -17,28 +17,24 @@ public final class ModAttachments {
             ResourceLocation.fromNamespaceAndPath(NPCAvatar.MOD_ID, "blob");
 
     public static final AttachmentType<ResourceLocation> AVATAR_ID =
-            AttachmentRegistry.<ResourceLocation>builder()
+            AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
+                    NPCAvatar.MOD_ID, "avatar_id"), builder -> builder
                     .initializer(() -> NONE)
                     .persistent(ResourceLocation.CODEC)
                     .syncWith(ByteBufCodecs.fromCodec(ResourceLocation.CODEC),
-                            (entity, player) -> true)
-                    .buildAndRegister(ResourceLocation.fromNamespaceAndPath(
-                            NPCAvatar.MOD_ID, "avatar_id"));
+                            (entity, player) -> true));
 
     public static final AttachmentType<Boolean> HAS_AVATAR_BLOB =
-            AttachmentRegistry.<Boolean>builder()
+            AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
+                    NPCAvatar.MOD_ID, "has_avatar_blob"), builder -> builder
                     .initializer(() -> false)
-                    .persistent(Codec.BOOL) // persistence optional, but fine
-                    .syncWith(ByteBufCodecs.BOOL, (entity, player) -> true)
-                    .buildAndRegister(
-                            ResourceLocation.fromNamespaceAndPath(NPCAvatar.MOD_ID, "has_avatar_blob"));
-
+                    .persistent(Codec.BOOL)
+                    .syncWith(ByteBufCodecs.BOOL, (entity, player) -> true));
 
     public static final AttachmentType<byte[]> AVATAR_BLOB =
-            AttachmentRegistry.<byte[]>builder()
+            AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
+                    NPCAvatar.MOD_ID, "avatar_blob"), builder -> builder
                     .initializer(() -> new byte[0])
-                    // Persist as byte[] (stored inside entity NBT). The data-attachment API supports this via sync codec;
-                    // persistence is handled by the attachment system; for "blob" we don't need a game registry codec.
                     .persistent(com.mojang.serialization.Codec.BYTE_BUFFER.xmap(
                             buf -> {
                                 byte[] out = new byte[buf.remaining()];
@@ -47,8 +43,7 @@ public final class ModAttachments {
                             },
                             ByteBuffer::wrap
                     ))
-//                    .syncWith(ByteBufCodecs.BYTE_ARRAY, (entity, player) -> true)
-                    .buildAndRegister(ResourceLocation.fromNamespaceAndPath(NPCAvatar.MOD_ID, "avatar_blob"));
+                    .syncWith(ByteBufCodecs.BYTE_ARRAY, (entity, player) -> true));
 
     /** Call from common init to guarantee class loading & registration. */
     public static void init() {
