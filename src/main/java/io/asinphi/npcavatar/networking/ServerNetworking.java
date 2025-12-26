@@ -3,7 +3,7 @@ package io.asinphi.npcavatar.networking;
 import io.asinphi.npcavatar.attachment.ModAttachments;
 import io.asinphi.npcavatar.avatar.AvatarStoreState;
 import io.asinphi.npcavatar.networking.payload.*;
-import io.asinphi.npcavatar.util.PermissionUtil;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -48,7 +48,7 @@ public final class ServerNetworking {
                 ModPackets.C2S_UPLOAD_AVATAR, (payload, context) -> {
             ServerPlayer player = context.player();
 
-            if (!PermissionUtil.check(player, "npcavatar.upload", 2)) {
+            if (!Permissions.check(player, "npcavatar.upload", 2)) {
                 context.responseSender().sendPacket(new S2CUploadResultPayload(
                         false, "No permission (npcavatar.upload)."));
                 return;

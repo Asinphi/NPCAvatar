@@ -78,6 +78,8 @@ dependencies {
 
 	modImplementation include('net.kyori:adventure-platform-fabric:5.14.1')
 
+	modImplementation include("me.lucko:fabric-permissions-api:0.3.1")
+
 	include(implementation 'org.yaml:snakeyaml:2.2')
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")

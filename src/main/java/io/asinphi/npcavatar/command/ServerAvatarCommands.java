@@ -12,7 +12,7 @@ import io.asinphi.npcavatar.avatar.EntityAvatarManager;
 import io.asinphi.npcavatar.config.Lang;
 import io.asinphi.npcavatar.networking.payload.S2CRequestLocalUploadPayload;
 import io.asinphi.npcavatar.util.AvatarIdUtil;
-import io.asinphi.npcavatar.util.PermissionUtil;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.minecraft.commands.CommandSourceStack;
@@ -36,15 +36,13 @@ public final class ServerAvatarCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("npcavatar")
-                        .requires(src -> PermissionUtil.check(
-                                src, "npcavatar.use", 2))
+                        .requires(Permissions.require("npcavatar.use", 2))
                         .executes(ctx -> {
                             Lang.send(ctx.getSource(), "commands.help");
                             return 1;
                         })
                         .then(Commands.literal("reload")
-                        .requires(src -> PermissionUtil.check(
-                                        src, "npcavatar.reload", 4))
+                        .requires(Permissions.require("npcavatar.reload", 4))
                                 .executes(ctx -> {
                                     NPCAvatar.reload();
                                     Lang.send(ctx.getSource(), "commands.reload.completed");
@@ -53,7 +51,7 @@ public final class ServerAvatarCommands {
                         .then(Commands.literal("upload")
                                 .requires(src ->
                                         src.getEntity() instanceof ServerPlayer player &&
-                                                PermissionUtil.check(player, "npcavatar.upload", 2)
+                                                Permissions.check(player, "npcavatar.upload", 2)
                                 )
                                 .then(Commands.argument("id", StringArgumentType.string())
                                         .executes(ctx -> {
@@ -70,8 +68,7 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("apply")
-                                .requires(src -> PermissionUtil.check(
-                                        src, "npcavatar.apply", 2))
+                                .requires(Permissions.require("npcavatar.apply", 2))
                                 .then(Commands.argument("avatarId", StringArgumentType.string())
                                         .suggests(ServerAvatarCommands::suggestUploadedAvatarIds)
 
@@ -138,8 +135,7 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("copy")
-                                .requires(src -> PermissionUtil.check(
-                                        src, "npcavatar.apply", 2))
+                                .requires(Permissions.require("npcavatar.apply", 2))
                                 .then(Commands.argument("source", EntityArgument.entities())
                                         .executes(ctx -> {
                                             if (!(ctx.getSource().getEntity() instanceof ServerPlayer executor)) {
@@ -179,7 +175,7 @@ public final class ServerAvatarCommands {
                         .then(Commands.literal("copyfromplayer")
                                 .requires(src ->
                                         // allow console too; only gate permission when a player is the executor
-                                        !(src.getEntity() instanceof ServerPlayer p) || PermissionUtil.check(
+                                        !(src.getEntity() instanceof ServerPlayer p) || Permissions.check(
                                                 p, "npcavatar.apply", 2)
                                 )
                                 .then(Commands.argument("player", EntityArgument.player())
@@ -227,8 +223,7 @@ public final class ServerAvatarCommands {
                                 )
                         )
                         .then(Commands.literal("clear")
-                                .requires(src -> PermissionUtil.check(
-                                        src, "npcavatar.apply", 2))
+                                .requires(Permissions.require("npcavatar.apply", 2))
 
                                 // 1) clear   (raycast fallback if player)
                                 .executes(ctx -> {
