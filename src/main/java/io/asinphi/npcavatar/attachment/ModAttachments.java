@@ -3,6 +3,7 @@ package io.asinphi.npcavatar.attachment;
 import com.mojang.serialization.Codec;
 import io.asinphi.npcavatar.NPCAvatar;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
@@ -21,15 +22,18 @@ public final class ModAttachments {
                     NPCAvatar.MOD_ID, "avatar_id"), builder -> builder
                     .initializer(() -> NONE)
                     .persistent(ResourceLocation.CODEC)
+                    .copyOnDeath()
                     .syncWith(ByteBufCodecs.fromCodec(ResourceLocation.CODEC),
-                            (entity, player) -> true));
+                            AttachmentSyncPredicate.all()));
 
     public static final AttachmentType<Boolean> HAS_AVATAR_BLOB =
             AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
                     NPCAvatar.MOD_ID, "has_avatar_blob"), builder -> builder
                     .initializer(() -> false)
                     .persistent(Codec.BOOL)
-                    .syncWith(ByteBufCodecs.BOOL, (entity, player) -> true));
+                    .copyOnDeath()
+                    .syncWith(ByteBufCodecs.BOOL,
+                            AttachmentSyncPredicate.all()));
 
     public static final AttachmentType<byte[]> AVATAR_BLOB =
             AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
@@ -42,7 +46,8 @@ public final class ModAttachments {
                                 return out;
                             },
                             ByteBuffer::wrap
-                    )));
+                    ))
+                    .copyOnDeath());
 
     /** Call from common init to guarantee class loading & registration. */
     public static void init() {
