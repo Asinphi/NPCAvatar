@@ -84,11 +84,18 @@ public final class ClientNetworking {
                 if (mc.level == null) return;
 
                 int entityId = payload.entityId();
+                int blobVersion = payload.blobVersion();
                 byte[] data = payload.compressedNbt();
                 if (data == null || data.length == 0) return;
 
                 var entity = mc.level.getEntity(entityId);
                 if (entity == null) return; // not in this client world anymore
+
+                Integer currentVersion = entity.getAttached(io.asinphi.npcavatar.attachment.ModAttachments.AVATAR_BLOB_VERSION);
+                if (currentVersion == null || currentVersion != blobVersion) {
+                    // Stale response; entity changed while request was in-flight.
+                    return;
+                }
 
                 // If we already applied this exact blob hash, don't redo it.
                 if (!ClientAppliedTracker.needsApply(entityId, data)) return;

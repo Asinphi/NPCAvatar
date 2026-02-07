@@ -14,8 +14,7 @@ import java.nio.ByteBuffer;
 public final class ModAttachments {
     public static final ResourceLocation NONE = ResourceLocation.fromNamespaceAndPath(
             NPCAvatar.MOD_ID, "none");
-    public static final ResourceLocation BLOB_MARKER_ID =
-            ResourceLocation.fromNamespaceAndPath(NPCAvatar.MOD_ID, "blob");
+    public static final int NO_BLOB_VERSION = -1;
 
     public static final AttachmentType<ResourceLocation> AVATAR_ID =
             AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
@@ -26,13 +25,13 @@ public final class ModAttachments {
                     .syncWith(ByteBufCodecs.fromCodec(ResourceLocation.CODEC),
                             AttachmentSyncPredicate.all()));
 
-    public static final AttachmentType<Boolean> HAS_AVATAR_BLOB =
+    public static final AttachmentType<Integer> AVATAR_BLOB_VERSION =
             AttachmentRegistry.create(ResourceLocation.fromNamespaceAndPath(
-                    NPCAvatar.MOD_ID, "has_avatar_blob"), builder -> builder
-                    .initializer(() -> false)
-                    .persistent(Codec.BOOL)
+                    NPCAvatar.MOD_ID, "avatar_blob_version"), builder -> builder
+                    .initializer(() -> NO_BLOB_VERSION)
+                    .persistent(Codec.INT)
                     .copyOnDeath()
-                    .syncWith(ByteBufCodecs.BOOL,
+                    .syncWith(ByteBufCodecs.VAR_INT,
                             AttachmentSyncPredicate.all()));
 
     public static final AttachmentType<byte[]> AVATAR_BLOB =

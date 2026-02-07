@@ -6,29 +6,23 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-import java.io.ByteArrayInputStream;
-
 @Environment(EnvType.CLIENT)
 public final class ClientAvatarApplier {
-
-    private static final long MAX_DECOMPRESSED_NBT_BYTES = 8L * 1024L * 1024L;
-
-    private static int tickCounter = 0;
 
     public static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientAvatarApplier::onEndTick);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public static void processEntity(Entity e) {
-        if (Boolean.TRUE.equals(e.getAttached(ModAttachments.HAS_AVATAR_BLOB))) {
-            if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.BLOB_MARKER_ID)) {
-                // Mark immediately to suppress further requests
-                ClientAppliedTracker.markApplied(e.getId(), ModAttachments.BLOB_MARKER_ID);
+        Integer blobVersion = e.getAttached(ModAttachments.AVATAR_BLOB_VERSION);
+        if (blobVersion != null && blobVersion >= 0) {
+            if (ClientAppliedTracker.needsApply(e.getId(), blobVersion)) {
+                // Mark immediately to suppress further requests for this version.
+                ClientAppliedTracker.markApplied(e.getId(), blobVersion);
 
                 ClientNetworking.requestEntityBlob(e.getId());
             }
@@ -37,8 +31,10 @@ public final class ClientAvatarApplier {
 
         ResourceLocation avatarId = e.getAttached(ModAttachments.AVATAR_ID);
 
-        // If server cleared it (or missing), explicitly un-apply Figura avatar.
-        if (avatarId == null || avatarId.equals(ModAttachments.NONE)) {
+        if (avatarId == null) return;
+
+        // If server cleared it, explicitly un-apply Figura avatar.
+        if (avatarId.equals(ModAttachments.NONE)) {
             // Only do work if we previously applied something.
             if (ClientAppliedTracker.needsApply(e.getId(), ModAttachments.NONE)) {
                 try {
@@ -51,6 +47,9 @@ public final class ClientAvatarApplier {
             return;
         }
 
+        // Avoid reapplying every run.
+        if (!ClientAppliedTracker.needsApply(e.getId(), avatarId)) return;
+
         // If we don't have the avatar data yet, request it once.
         if (!ClientAvatarCache.has(avatarId)) {
             if (ClientAvatarCache.markRequested(avatarId)) {
@@ -58,9 +57,6 @@ public final class ClientAvatarApplier {
             }
             return;
         }
-
-        // Avoid reapplying every run.
-        if (!ClientAppliedTracker.needsApply(e.getId(), avatarId)) return;
 
         // Decode and apply.
         CompoundTag nbt = ClientAvatarCache.decompress(avatarId);
@@ -81,22 +77,8 @@ public final class ClientAvatarApplier {
     private static void onEndTick(Minecraft mc) {
         if (mc.level == null) return;
 
-        // Don’t do this every tick; 10 ticks = twice a second.
-        if ((tickCounter++ % 10) != 0) return;
-
         for (Entity e : mc.level.entitiesForRendering()) {
             processEntity(e);
-        }
-    }
-
-    private static CompoundTag decompressCompressedNbt(byte[] compressed) {
-        try {
-            return NbtIo.readCompressed(
-                    new ByteArrayInputStream(compressed),
-                    NbtAccounter.create(MAX_DECOMPRESSED_NBT_BYTES)
-            );
-        } catch (Exception e) {
-            return null;
         }
     }
 

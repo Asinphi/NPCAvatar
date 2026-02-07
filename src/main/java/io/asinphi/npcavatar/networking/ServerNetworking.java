@@ -123,13 +123,14 @@ public final class ServerNetworking {
                 }
 
                 byte[] blob = e.getAttached(ModAttachments.AVATAR_BLOB);
-                if (blob == null || blob.length == 0) {
+                Integer blobVersion = e.getAttached(ModAttachments.AVATAR_BLOB_VERSION);
+                if (blob == null || blob.length == 0 || blobVersion == null || blobVersion < 0) {
                     // Nothing to send.
                     return;
                 }
 
                 // Reply only to the requesting player.
-                ServerPlayNetworking.send(player, new S2CEntityBlobPayload(entityId, blob));
+                ServerPlayNetworking.send(player, new S2CEntityBlobPayload(entityId, blobVersion, blob));
             });
         });
     }
@@ -173,7 +174,11 @@ public final class ServerNetworking {
 
             // AttachmentType<byte[]> AVATAR_BLOB (persistent + synced)
             ent.setAttached(ModAttachments.AVATAR_BLOB, data);
-            ent.setAttached(ModAttachments.HAS_AVATAR_BLOB, true);
+            if (data.length == 0) {
+                ent.setAttached(ModAttachments.AVATAR_BLOB_VERSION, ModAttachments.NO_BLOB_VERSION);
+            } else {
+                ent.setAttached(ModAttachments.AVATAR_BLOB_VERSION, bumpBlobVersion(ent));
+            }
 
             AvatarBlobAppliedCallback.EVENT.invoker().onAvatarApplied(ent, sender, data);
         }
@@ -183,6 +188,12 @@ public final class ServerNetworking {
         ServerLevel level = server.getLevel(target.dimension());
         if (level == null) return null;
         return level.getEntity(target.entityId());
+    }
+
+    private static int bumpBlobVersion(Entity target) {
+        Integer current = target.getAttached(ModAttachments.AVATAR_BLOB_VERSION);
+        if (current == null || current < 0 || current == Integer.MAX_VALUE) return 0;
+        return current + 1;
     }
 
     private ServerNetworking() {}

@@ -38,6 +38,11 @@ public final class ClientAppliedTracker {
         return prev == null || prev != desired;
     }
 
+    public static boolean needsApply(int entityId, int blobVersion) {
+        Integer prev = appliedHashByEntityId.get(entityId);
+        return prev == null || prev != blobVersion;
+    }
+
     /**
      * Mark that the avatar was applied to this entity.
      */
@@ -48,11 +53,11 @@ public final class ClientAppliedTracker {
         appliedHashByEntityId.put(entityId, hashAvatarId(avatarId));
     }
 
-    public static void markApplied(int entityId, byte[] avatarBlob) {
+    public static void markApplied(int entityId, int blobVersion) {
         if (appliedHashByEntityId.size() > MAX_TRACKED) {
             appliedHashByEntityId.clear();
         }
-        appliedHashByEntityId.put(entityId, hashAvatarBlob(avatarBlob));
+        appliedHashByEntityId.put(entityId, blobVersion);
     }
 
     /**
@@ -61,12 +66,6 @@ public final class ClientAppliedTracker {
      */
     public static void invalidateId(ResourceLocation avatarId) {
         int h = hashAvatarId(avatarId);
-        if (h == 0) return;
-        appliedHashByEntityId.entrySet().removeIf(e -> e.getValue() == h);
-    }
-
-    public static void invalidateBlob(byte[] avatarBlob) {
-        int h = hashAvatarBlob(avatarBlob);
         if (h == 0) return;
         appliedHashByEntityId.entrySet().removeIf(e -> e.getValue() == h);
     }
@@ -84,10 +83,6 @@ public final class ClientAppliedTracker {
     public static boolean isPlayerOverridden(UUID playerId, CompoundTag nbt) {
         CompoundTag appliedNbt = overriddenPlayers.get(playerId);
         return playerId != null && appliedNbt != null && !appliedNbt.equals(nbt);
-    }
-
-    public static boolean isPlayerOverridden(UUID playerId) {
-        return playerId != null && overriddenPlayers.containsKey(playerId);
     }
 
     public static void clearAll() {
