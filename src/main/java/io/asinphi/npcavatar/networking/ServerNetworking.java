@@ -1,6 +1,7 @@
 package io.asinphi.npcavatar.networking;
 
 import io.asinphi.npcavatar.attachment.ModAttachments;
+import io.asinphi.npcavatar.avatar.AvatarBlobAppliedCallback;
 import io.asinphi.npcavatar.avatar.AvatarStoreState;
 import io.asinphi.npcavatar.networking.payload.*;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -173,6 +174,8 @@ public final class ServerNetworking {
             // AttachmentType<byte[]> AVATAR_BLOB (persistent + synced)
             ent.setAttached(ModAttachments.AVATAR_BLOB, data);
             ent.setAttached(ModAttachments.HAS_AVATAR_BLOB, true);
+
+            AvatarBlobAppliedCallback.EVENT.invoker().onAvatarApplied(ent, sender, data);
         }
     }
 
